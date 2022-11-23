@@ -1,14 +1,8 @@
-const mainShader = {
-    /**
-     * Fragment Shader
-     * Color and other interactions with verticies
-    */
-    frag: require("../glsl/main.frag.glsl") as string,
-    /**
-     * Vertex Shader
-     * Position and so on
-    */
-    vert: require("../glsl/main.vert.glsl" ) as string
-}
+import { ShaderSource } from "../model/ShaderSource";
+
+const mainShader : ShaderSource = {
+    fragment: require("../glsl/main.frag.glsl"),
+    vertex: require("../glsl/main.vert.glsl" )
+} 
 
 export {mainShader}

@@ -1,3 +1,4 @@
+import { util } from "webpack";
 import {setupWebGL} from "./utils/WebGLUtils";
 
 window.onload = main;
@@ -20,7 +21,12 @@ function main(): void { // : Result<void>
 	const gl = setupWebGL(canvas);
 	if (!gl) return onFatalError(new Error("WebGL isn't available"));
 
+	
+
 	gl.clearColor(0, 1, 1, 1);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 	return;
 }
+
+
+
