@@ -31,7 +31,14 @@ module.exports = (env:any) => {
                 {
                     test: /\.css$/,
                     use: [ 'style-loader', 'css-loader' ]
-                }
+                },
+                {
+
+                    test: /\.(png|svg|jpg|jpeg|gif)$/i,
+            
+                    type: 'asset/resource',
+            
+                  },
             ],
         },
         resolve: {
@@ -50,6 +57,7 @@ module.exports = (env:any) => {
             new HTMLWebpackPlugin({
                 title: 'Computer Graphics',
                 template: 'index.html',
+                
               })
         ],
     }
