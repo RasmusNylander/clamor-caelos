@@ -56,12 +56,8 @@ export async function loadShaderFromFile(gl: WebGLRenderingContext, type: Shader
 	}
 }
 
-export async function loadShaderFromString(gl: WebGLRenderingContext, type: ShaderType, source: string) {
-	try {
-		return compileShader(gl, type, source);
-	} catch (e) {
-		return error(`Unable to get shader with source: '${source}'`, e as Error);
-	}
+export function loadShaderFromString(gl: WebGLRenderingContext, type: ShaderType, source: string): Result<WebGLShader> {
+	return compileShader(gl, type, source);
 }
 
 export function compileProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): Result<WebGLProgram> {
@@ -102,11 +98,9 @@ export async function initShadersFromFile(gl: WebGLRenderingContext, vertexShade
 	return error(`Failed to load fragment shader '${fragmentShaderFilename}'`, (<Failure>fragmentShader).error);
 }
 
-export async function initShadersFromString(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Promise<Result<WebGLProgram>> {
-	const [vertexShader, fragmentShader] = await Promise.all([
-		loadShaderFromString(gl, ShaderType.VERTEX_SHADER, vertexShaderSource),
-		loadShaderFromString(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderSource),
-	]);
+export function initShadersFromString(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Result<WebGLProgram> {
+	const vertexShader = compileShader(gl, ShaderType.VERTEX_SHADER, vertexShaderSource);
+	const fragmentShader = compileShader(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderSource);
 
 	if (vertexShader.ok && fragmentShader.ok)
 		return compileProgram(gl, vertexShader.value, fragmentShader.value); // Memory leak on failure: the shaders are not deleted.
