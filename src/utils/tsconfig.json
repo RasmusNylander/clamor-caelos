@@ -5,6 +5,7 @@
     "strict": false,
     "moduleResolution": "node",
     "noImplicitAny": false,
+    "noImplicitReturns": false,
     "outDir": "docs"
   },
   "extends": "../../",
