@@ -63,7 +63,7 @@
  *        canvas.
  * @return {string} The html.
  */
-const makeFailHTML = function (msg) {
+const makeFailHTML = function (msg: string) {
 	return '' +
 		'<table style="background-color: #8CE; width: 100%; height: 100%;"><tr>' +
 		'<td align="center">' +
@@ -101,7 +101,7 @@ const OTHER_PROBLEM = '' +
  * @return {WebGLRenderingContext} The created context.
  */
 export function setupWebGL(canvas: HTMLCanvasElement, opt_attribs?: WebGLContextAttributes): WebGLRenderingContext | null {
-	function showLink(str) {
+	function showLink(str: string) {
 		const container = <HTMLElement>canvas.parentNode;
 		if (container) {
 			container.innerHTML = makeFailHTML(str);

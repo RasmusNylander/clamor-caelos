@@ -52,7 +52,7 @@ export async function loadShaderFromFile(gl: WebGLRenderingContext, type: Shader
 		const source = await response.text();
 		return compileShader(gl, type, source);
 	} catch (e) {
-		return error(`Unable to fetch shader '${filename}'`, e);
+		return error(`Unable to fetch shader '${filename}'`, e as Error);
 	}
 }
 
@@ -95,7 +95,7 @@ export async function initShadersFromFile(gl: WebGLRenderingContext, vertexShade
 }
 
 export function initShaders(gl: WebGLRenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
-	const program: WebGLProgram = gl.createProgram();
+	const program: WebGLProgram | null = gl.createProgram();
 	if (program === null)
 		return error("WebGL returned null program.");
 

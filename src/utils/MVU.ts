@@ -60,7 +60,7 @@ export function vec3(xy: Vec2, z: number): Vec3;
 export function vec3(xyz: Vec4);
 export function vec3(a: Vec2 | Vec4 | number, b?: number, c?: number): Vec3 {
 	if (b === undefined)
-		return a instanceof Array ? [a[0], a[1], a[2]] : <Vec3>[a, a, a];
+		return a instanceof Array ? [a[0], a[1], a[2]] : [a, a, a];
 
 	if (c === undefined)
 		return [a[0], a[1], b];
