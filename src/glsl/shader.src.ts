@@ -1,8 +1,8 @@
-import { ShaderSource } from "../model/ShaderSource";
+import {ShaderSource} from "../model/ShaderSource";
 
 const mainShader : ShaderSource = {
-    fragment: require("../glsl/main.frag.glsl"),
-    vertex: require("../glsl/main.vert.glsl" )
+    fragment: require("./fragment.glsl"),
+    vertex: require("./vertex.glsl" )
 } 
 
 export {mainShader}
