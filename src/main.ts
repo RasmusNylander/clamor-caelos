@@ -18,9 +18,9 @@ export function main(): void { // : Result<void>
 	const gl = setupWebGL(canvas);
 	if (!gl) return onFatalError(new Error("WebGL isn't available"));
 
-
-
+	gl.viewport(0, 0, canvas.width, canvas.height);
 	gl.clearColor(0, 1, 1, 1);
-	gl.clear(gl.COLOR_BUFFER_BIT);
+	gl.clear(gl.COLOR_BUFFER_BIT)
+
 	return;
 }
