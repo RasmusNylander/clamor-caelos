@@ -3,6 +3,7 @@ import * as webpack from "webpack";
 import * as path from "path";
 import * as fs from "fs";
 import "ts-loader";
+import * as HTMLWebpackPlugin from "html-webpack-plugin";
 
 //JS - no typings
 const LiveReload = require("webpack-livereload-plugin");
@@ -11,7 +12,7 @@ module.exports = (env:any) => {
     return {
         entry: "./index.ts",
         output: {
-            path: path.resolve(__dirname, "dist"),
+            path: path.resolve(__dirname, "docs"),
             filename: "bundle.js",
             publicPath: "/assets/",
             library: "MyLibrary",
@@ -45,7 +46,11 @@ module.exports = (env:any) => {
         context: __dirname,
         target: "web",
         plugins: [
-            new LiveReload({})
+            new LiveReload({}),
+            new HTMLWebpackPlugin({
+                title: 'Computer Graphics',
+                template: 'index.html',
+              })
         ],
     }
 }
