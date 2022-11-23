@@ -3,12 +3,12 @@ const mainShader = {
      * Fragment Shader
      * Color and other interactions with verticies
     */
-    frag: require("../glsl/main.frag.glsl"),
+    frag: require("../glsl/main.frag.glsl") as string,
     /**
      * Vertex Shader
      * Position and so on
     */
-    vert: require("../glsl/main.vert.glsl")
+    vert: require("../glsl/main.vert.glsl" ) as string
 }
 
 export {mainShader}

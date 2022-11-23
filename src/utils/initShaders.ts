@@ -56,6 +56,14 @@ export async function loadShaderFromFile(gl: WebGLRenderingContext, type: Shader
 	}
 }
 
+export async function loadShaderFromString(gl: WebGLRenderingContext, type: ShaderType, source: string) {
+	try {
+		return compileShader(gl, type, source);
+	} catch (e) {
+		return error(`Unable to get shader with source: '${source}'`, e as Error);
+	}
+}
+
 export function compileProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): Result<WebGLProgram> {
 	const program = gl.createProgram();
 	if (program === null) {
@@ -92,6 +100,26 @@ export async function initShadersFromFile(gl: WebGLRenderingContext, vertexShade
 	if (!vertexShader.ok)
 		return error(`Failed to load vertex shader '${vertexShaderFilename}'`, (<Failure>vertexShader).error);
 	return error(`Failed to load fragment shader '${fragmentShaderFilename}'`, (<Failure>fragmentShader).error);
+}
+
+export async function initShadersFromString(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Promise<Result<WebGLProgram>> {
+	const [vertexShader, fragmentShader] = await Promise.all([
+		loadShaderFromString(gl, ShaderType.VERTEX_SHADER, vertexShaderSource),
+		loadShaderFromString(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderSource),
+	]);
+
+	if (vertexShader.ok && fragmentShader.ok)
+		return compileProgram(gl, vertexShader.value, fragmentShader.value); // Memory leak on failure: the shaders are not deleted.
+
+	gl.deleteShader(vertexShader.ok ? vertexShader.value : null);
+	gl.deleteShader(fragmentShader.ok ? fragmentShader.value : null);
+
+	if (!vertexShader.ok && !fragmentShader.ok)
+		return error(`Failed to compile both vertex and fragment shaders.\nVertex shader error: ${vertexShader["error"].message}\nFragment shader error: ${fragmentShader["error"].message}`);
+
+	if (!vertexShader.ok)
+		return error(`Failed to load vertex shader with source: '${vertexShaderSource}'`, (<Failure>vertexShader).error);
+	return error(`Failed to load fragment shader with source: '${fragmentShaderSource}'`, (<Failure>fragmentShader).error);
 }
 
 export function initShaders(gl: WebGLRenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
