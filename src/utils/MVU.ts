@@ -57,13 +57,13 @@ export function vec2(x: number, y?: number): Vec2 {
 export function vec3(v: number): Vec3;
 export function vec3(x: number, y: number, z: number): Vec3;
 export function vec3(xy: Vec2, z: number): Vec3;
-export function vec3(xyz: Vec4);
+export function vec3(xyz: Vec4): Vec3;
 export function vec3(a: Vec2 | Vec4 | number, b?: number, c?: number): Vec3 {
 	if (b === undefined)
-		return a instanceof Array ? [a[0], a[1], a[2]] : [a, a, a];
+		return (a instanceof Array ? [a[0], a[1], a[2]] : [a, a, a]) as Vec3;
 
 	if (c === undefined)
-		return [a[0], a[1], b];
+		return [(<Vec2>a)[0], (<Vec2>a)[1], b];
 
 	return [<number>a, b, c];
 }
@@ -78,10 +78,10 @@ export function vec4(a: Vec3 | Vec2 | number, b?: number, c?: number, d?: number
 		return <Vec4>[a, a, a, a];
 
 	if (c === undefined)
-		return [a[0], a[1], a[2], b];
+		return [(<Vec3>a)[0], (<Vec3>a)[1], (<Vec3>a)[2], b];
 
 	if (d === undefined)
-		return [a[0], a[1], b, c];
+		return [(<Vec2>a)[0], (<Vec2>a)[1], b, c];
 
 	return [<number>a, b, c, d];
 }
@@ -136,15 +136,7 @@ export function identity<T extends 2 | 3 | 4>(dimension: T): matOfDim<typeof dim
 		case 4:
 			return <matOfDim<typeof dimension>>mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(0, 0, 0, 1));
 	}
-}
-
-
-export function copy<T extends Vec>(v: T): T;
-export function copy<T extends Mat>(m: T): T;
-export function copy(o: Vec | Mat): Vec | Mat {
-	if (typeof o[0] === "number")
-		return [...o]
-	o.map((v) => [...v]);
+	throw new Error("Unreachable code");
 }
 
 //----------------------------------------------------------------------------
@@ -305,8 +297,8 @@ export function equal(a: Vec | Mat, b: Vec | Mat): boolean {
 	return true;
 }
 
-export function almostEqual<T extends Vec>(a: T, b: sameVec<typeof a>, epsilon): boolean;
-export function almostEqual<T extends Mat>(a: T, b: sameMat<typeof a>, epsilon): boolean;
+export function almostEqual<T extends Vec>(a: T, b: sameVec<typeof a>, epsilon: number): boolean;
+export function almostEqual<T extends Mat>(a: T, b: sameMat<typeof a>, epsilon: number): boolean;
 export function almostEqual(a: Vec | Mat, b: Vec | Mat, epsilon = 0.00001): boolean {
 	function almostEqualVec(a: Vec, b: Vec): boolean {
 		for (let i = 0; i < a.length; i++)
@@ -330,13 +322,13 @@ export function add<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function add(a: Vec | Mat, b: number | Vec | Mat): Vec | Mat {
 	if (typeof a[0] !== "number") { // Matrix
 		if (typeof b === "number")
-			return <Mat>a.map((v) => add(v, b));
-		return <Mat>a.map((v, i) => add(v, <number>b[i]));
+			return <Mat>a.map((v) => add(<Vec>v, b));
+		return <Mat>a.map((v, i) => add(<Vec>v, <number>b[i]));
 	}
 
 	if (typeof b === "number")
-		return <Vec>a.map((v) => v + b);
-	return <Vec>a.map((v, i) => v + b[i]);
+		return <Vec>a.map((v) => <number>v + b);
+	return <Vec>a.map((v, i) => <number>v + <number>b[i]);
 }
 
 export function subtract<T extends Vec>(a: T, b: number): T;
@@ -346,13 +338,13 @@ export function subtract<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function subtract(a: Vec | Mat, b: number | Vec | Mat): Vec | Mat {
 	if (typeof a[0] !== "number") { // Matrix
 		if (typeof b === "number")
-			return <Mat>a.map((v, _) => subtract(v, b));
-		return <Mat>a.map((v, i) => subtract(v, <number>b[i]));
+			return <Mat>a.map((v, _) => subtract(<Vec>v, b));
+		return <Mat>a.map((v, i) => subtract(<Vec>v, <number>b[i]));
 	}
 	if (typeof b === "number")
-		return <Vec>a.map((v) => v - b);
+		return <Vec>a.map((v) => <number>v - b);
 
-	return <Vec>a.map((v, i) => v - <number>b[i]);
+	return <Vec>a.map((v, i) => <number>v - <number>b[i]);
 }
 
 
@@ -391,9 +383,11 @@ export function lerp<T extends Vec>(a: T, b: sameVec<typeof a>, t: number): same
 export function lerp<T extends Mat>(a: T, b: sameMat<typeof a>, t: number): sameMat<typeof a>;
 export function lerp(a: Vec | Mat, b: Vec | Mat, t: number): Vec | Mat {
 	if (typeof a[0] !== "number") // Matrix
-		return <Mat>a.map((v, i) => lerp(v, <Vec>b[i], t));
+		{ // @ts-ignore
+			return <Mat>a.map((v, i) => lerp(v, <Vec>b[i], t));
+		}
 
-	return <Vec>a.map((v, i) => v + (<number>b[i] - v) * t);
+	return <Vec>a.map((v, i) => <number>v + (<number>b[i] - <number>v) * t);
 }
 
 //----------------------------------------------------------------------------
@@ -479,8 +473,9 @@ export function scale<T extends Mat | Vec>(a: T, s: number): T {
 		return <Vec>vec.map((v) => v * s);
 	}
 
-	if (typeof a[0] !== "number")
-		return <T>a.map((v) => scaleVec(v, s));
+	if (typeof a[0] !== "number") {
+		return <T>(<Mat>a).map((v) => scaleVec(v, s));
+	}
 
 	return <T>scaleVec(<Vec>a, s);
 }
@@ -489,8 +484,11 @@ export function multiplyElementWise<T extends Vec>(a: T, b: sameVec<typeof a>): 
 export function multiplyElementWise<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function multiplyElementWise(a: Vec | Mat, b: Vec | Mat): Vec | Mat {
 	if (typeof a[0] !== "number") // Matrix
-		return <Mat>a.map((v, i) => multiplyElementWise(v, <Vec>b[i]));
+		{ // @ts-ignore
+			return <Mat>a.map((v, i) => multiplyElementWise(v, <Vec>b[i]));
+		}
 
+	// @ts-ignore
 	return <Vec>a.map((v, i) => v * <number>b[i]);
 }
 
@@ -498,8 +496,11 @@ export function divideElementWise<T extends Vec>(a: T, b: sameVec<typeof a>): T;
 export function divideElementWise<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function divideElementWise(a: Vec | Mat, b: Vec | Mat): Vec | Mat {
 	if (typeof a[0] !== "number")
-		return <Mat>a.map((v, i) => divideElementWise(v, <Vec>b[i]));
+		{ // @ts-ignore
+			return <Mat>a.map((v, i) => divideElementWise(v, <Vec>b[i]));
+		}
 
+	// @ts-ignore
 	return <Vec>a.map((v, i) => v / <number>b[i]);
 }
 
@@ -531,7 +532,7 @@ export let sizeof = {
 function map2D<T extends Mat>(m: T, f: (v: number, i: matIndex<T>, j: matIndex<T>) => number): T {
 	return <T>m.map(
 		(row, i) => row.map(
-			(v, j) => f(v, i, j)
+			(v, j) => f(v, <matIndex<T>>i, <matIndex<T>>j)
 		)
 	);
 }
@@ -793,6 +794,7 @@ namespace MVUtest {
 		let v = vec4(1, 2, 3, 4);
 		let result = transform(m, v);
 		if (equal(result, v)) return ok();
+		return error("tep")
 	}
 
 	export function transform_should_return_product_of_matrix_and_vector(): Result<void> {
@@ -894,6 +896,7 @@ namespace MVUtest {
 
 let passed = 0;
 for (let testKey in MVUtest) {
+	// @ts-ignore
 	let test = MVUtest[testKey];
 	let result = test();
 	if (result.ok) {
