@@ -8,57 +8,48 @@ import * as HTMLWebpackPlugin from "html-webpack-plugin";
 //JS - no typings
 const LiveReload = require("webpack-livereload-plugin");
 
-module.exports = (env:any) => {
-    return {
-        entry: "./index.ts",
-        output: {
-            path: path.resolve(__dirname, "docs"),
-            filename: "bundle.js",
-            publicPath: "/assets/",
-            library: "MyLibrary",
+module.exports = (env: any) => {
+  return {
+    entry: "./index.ts",
+    output: {
+      path: path.resolve(__dirname, "docs"),
+      filename: "bundle.js"
+    },
+    module: {
+      rules: [
+        {
+            test: /\.png$/,
+            type: "asset/resource",
+          },
+        {
+          test: /\.tsx?$/,
+          loader: "ts-loader",
+          exclude: /node_modules/,
         },
-        module: {
-            rules: [
-                {
-                    test: /\.tsx?$/,
-                    loader: 'ts-loader',
-                    exclude: /node_modules/
-                },
-                {
-                    test: /\.glsl$/,
-                    loader: 'webpack-glsl-loader'
-                },
-                {
-                    test: /\.css$/,
-                    use: [ 'style-loader', 'css-loader' ]
-                },
-                {
+        {
+          test: /\.glsl$/,
+          loader: "webpack-glsl-loader",
+        },
+        {
+          test: /\.css$/,
+          use: ["style-loader", "css-loader"],
+        },
+      ],
+    },
+    resolve: {
+      modules: ["node_modules"],
 
-                    test: /\.(png|svg|jpg|jpeg|gif)$/i,
-            
-                    type: 'asset/resource',
-            
-                  },
-            ],
-        },
-        resolve: {
-            modules: [
-                "node_modules",
-            ],
-
-            extensions: [".ts", ".json"],
-            alias: {
-            },
-        },
-        context: __dirname,
-        target: "web",
-        plugins: [
-            new LiveReload({}),
-            new HTMLWebpackPlugin({
-                title: 'Computer Graphics',
-                template: 'index.html',
-                
-              })
-        ],
-    }
-}
+      extensions: [".ts", ".json"],
+      alias: {},
+    },
+    context: __dirname,
+    target: "web",
+    plugins: [
+      new LiveReload({}),
+      new HTMLWebpackPlugin({
+        title: "Computer Graphics",
+        template: "index.html",
+      }),
+    ],
+  };
+};
