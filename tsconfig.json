@@ -5,13 +5,14 @@
     "strict": true,
     "moduleResolution": "node",
     "noImplicitAny": true,
-    "outDir": "docs"
+    "outDir": "docs",
+   
   },
   "files": [
     "index.ts",
-    "index.d.ts"
+    "src/custom.d.ts"
   ],
   "exclude": [
     "./webpack.config.ts"
   ]
-}
+} 
