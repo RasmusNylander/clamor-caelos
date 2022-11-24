@@ -18,8 +18,10 @@ module.exports = (env: any) => {
     module: {
       rules: [
         {
-            test: /\.png$/,
-            type: "asset/resource",
+          test: /\.(jpg|png)$/,
+          use: {
+            loader: 'url-loader',
+          },
           },
         {
           test: /\.tsx?$/,
