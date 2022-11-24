@@ -180,3 +180,5 @@ yarn.lock
 
 # ignore docs folder
 docs
+docs/bundle.js
+docs/index.html
