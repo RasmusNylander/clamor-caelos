@@ -1,9 +1,13 @@
 import { setupWebGL } from "./utils/WebGLUtils";
 import { initShadersFromString } from "./utils/initShaders";
-import { mainShader } from "./glsl/shader.src";
-import createContext, { Context, rotatePlane, setPlaneSubdivision } from "./model/Context";
+import { mainShader } from "./shaders/shader.src";
+import createContext, {
+  Context,
+  refreshBuffers,
+  rotatePlane,
+  setPlaneSubdivision,
+} from "./model/Context";
 import heightMapPath from "./assets/images/perlin_512.png";
-import { generatePlane, plane as Plane} from "./utils/Mesh";
 import {
   flatten,
   flattenMat,
@@ -20,7 +24,7 @@ import {
   translation,
   vec3,
 } from "./utils/MVU";
-
+import Shader from "./model/Shader";
 
 const SHOULD_LOOP = true;
 
@@ -45,27 +49,13 @@ export async function main(): Promise<void> {
   gl.viewport(0, 0, canvas.width, canvas.height);
   gl.clearColor(0.9, 0.9, 0.9, 1);
   gl.enable(gl.DEPTH_TEST);
+  gl.enable(gl.CULL_FACE);
+  gl.cullFace(gl.BACK);
 
-  console.debug("Loading shaders: ", mainShader);
+  const context = createContext(gl, canvas);
 
-  const program = initShadersFromString(
-    gl,
-    mainShader.vertex,
-    mainShader.fragment
-  );
-
-  if (!program.ok) return onFatalError(program.error);
-  gl.useProgram(program.value);
-  console.debug("Shader program loaded:", program.value);
-
-  const context = createContext(gl, canvas, program.value);
-  console.debug("Context created:", context);
-
-  createBuffers(gl, context);
   loadHeightmap(gl, context);
-  bindBuffers(gl, context);
   setupMatrices(context);
-
   handleHTMLInput(context);
 
   requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
@@ -74,11 +64,8 @@ export async function main(): Promise<void> {
 
 // Refresh the plane mesh and buffers
 function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
-	  const { plane } = context;
-	  const { mesh_data } = plane;
-	  const { vertices, normals, uvs, indices } = mesh_data;
-	bindBuffers(gl, context);
-	setupMatrices(context);
+  refreshBuffers(context);
+  setupMatrices(context);
 }
 
 function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
@@ -91,73 +78,10 @@ function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
   context.heightMapImage.src = heightMapPath;
 
   const heightMap = gl.createTexture();
-  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, heightMap);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    0,
-    gl.RGB,
-    gl.RGB,
-    gl.UNSIGNED_BYTE,
-    context.heightMapImage
-  );
-  gl.uniform1i(context.uniformLocations.heightMap, 0);
-
+  if (!heightMap) return onFatalError(new Error("Could not create heightmap"));
+  context.shader.setHeightMap(heightMap, context.heightMapImage);
   console.debug("Heightmap loaded:", context.heightMapImage);
 }
-
-function createBuffers(gl: WebGLRenderingContext, context: Context): void {
-  const vBuffer = createEmptyArrayBuffer(
-    gl,
-    context.attributeLocations.vertex,
-    3,
-    gl.FLOAT
-  );
-  const nBuffer = createEmptyArrayBuffer(
-    gl,
-    context.attributeLocations.normal,
-    3,
-    gl.FLOAT
-  );
-  const hBuffer = createEmptyArrayBuffer(
-    gl,
-    context.attributeLocations.texture_coords,
-    2,
-    gl.FLOAT
-  );
-  const iBuffer = gl.createBuffer();
-
-  if (!vBuffer || !nBuffer || !hBuffer || !iBuffer)
-    return onFatalError(new Error("Could not create buffers"));
-
-  context.buffers = {
-    vertex: vBuffer,
-    normal: nBuffer,
-    texture: hBuffer,
-    index: iBuffer,
-  };
-  console.debug("Buffers created:", context.buffers);
-}
-
-function bindBuffers(gl: WebGLRenderingContext, context: Context): void {
-  gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.vertex);
-  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.vertices, gl.STATIC_DRAW);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.normal);
-  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.normals, gl.STATIC_DRAW);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.texture);
-  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.uvs, gl.STATIC_DRAW);
-
-  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, context.plane.mesh_data.indices, gl.STATIC_DRAW);
-  console.debug("All buffers bound");
-}
-
 function setupMatrices(context: Context): void {
   context.projectionMatrix = perspective(
     45,
@@ -180,7 +104,6 @@ function setupMatrices(context: Context): void {
   const rotateY = rotationMatrixY(context.plane.rotation[1]);
   const rotateZ = rotationMatrixZ(context.plane.rotation[2]);
 
-
   modelMatrix = multiply(modelMatrix, modelTranslation);
   modelMatrix = multiply(modelMatrix, rotateX);
   modelMatrix = multiply(modelMatrix, rotateY);
@@ -190,68 +113,54 @@ function setupMatrices(context: Context): void {
   context.modelViewMatrix = multiply(viewMatrix, modelMatrix);
   context.normalMatrix = identity(4);
 
- 
   // calculate normal matrix
   const normMat = inverse(context.modelViewMatrix);
   if (normMat.ok) context.normalMatrix = normMat.value;
 
+  // set matrices in shader
+  context.shader.setProjectionMatrix(flattenMat(context.projectionMatrix));
+  context.shader.setModelViewMatrix(flattenMat(context.modelViewMatrix));
+  context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
+  
 }
 
 function handleHTMLInput(context: Context): void {
-	  const subdivisionsSlider = document.getElementById("subdivisions") as HTMLInputElement;
-	  subdivisionsSlider.oninput = function (event) {
-		const subdivisions = parseInt(subdivisionsSlider.value);
-		setPlaneSubdivision(context, subdivisions);
-		refreshPlane(context.gl, context);
-		console.debug("Subdivisions changed to:", subdivisions);
-	  }
+  const subdivisionsSlider = document.getElementById(
+    "subdivisions"
+  ) as HTMLInputElement;
+  subdivisionsSlider.oninput = function (event) {
+    const subdivisions = parseInt(subdivisionsSlider.value);
+    setPlaneSubdivision(context, subdivisions);
+    refreshPlane(context.gl, context);
+    console.debug("Subdivisions changed to:", subdivisions);
+  };
+
+  const tilingSlider = document.getElementById("tiling") as HTMLInputElement;
+  tilingSlider.oninput = function (event) {
+    const tiling = parseInt(tilingSlider.value);
+  };
 }
 
-function drawScene(gl: WebGLRenderingContext, context: Context, loop: boolean, time: number): void {
+function drawScene(
+  gl: WebGLRenderingContext,
+  context: Context,
+  loop: boolean,
+  time: number
+): void {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-
-  rotatePlane(context, vec3(0, 0, .1));
+  rotatePlane(context, vec3(0, 0, 0.1));
   setupMatrices(context);
 
-  gl.uniformMatrix4fv(
-    context.uniformLocations.projection,
-    false,
-    flattenMat(context.projectionMatrix)
-  );
-  gl.uniformMatrix4fv(
-    context.uniformLocations.modelView,
-    false,
-    flattenMat(context.modelViewMatrix)
-  );
-
-  //   gl.uniformMatrix4fv(
-  //     context.uniformLocations.normalMatrix,
-  //     false,
-  //     flattenMat(context.normalMatrix)
-  //   );
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
-
-  gl.drawElements(gl.TRIANGLES, context.plane.mesh_data.indices.length, gl.UNSIGNED_SHORT, 0);
+  gl.drawElements(
+    context.wireframe ? gl.LINES : gl.TRIANGLES,
+    context.plane.mesh_data.indices.length,
+    gl.UNSIGNED_SHORT,
+    0
+  );
 
   if (loop) requestAnimationFrame((time) => drawScene(gl, context, loop, time));
 }
 
-export function createEmptyArrayBuffer(
-  gl: WebGLRenderingContext,
-  a_attribute: number,
-  num: number,
-  type: number
-) {
-  var buffer = gl.createBuffer(); // Create a buffer object
-  if (!buffer) {
-    console.log("Failed to create the buffer object");
-    return null;
-  }
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-  gl.vertexAttribPointer(a_attribute, num, type, false, 0, 0); // Assign the buffer object to the attribute variable
-  gl.enableVertexAttribArray(a_attribute); // Enable the assignment
-
-  return buffer;
-}

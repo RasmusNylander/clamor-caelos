@@ -1,5 +1,6 @@
+import PrimaryShader from "../shaders/PrimaryShader";
 import { generatePlane } from "../utils/Mesh";
-import { identity, Mat4, Vec3 } from "../utils/MVU";
+import { identity, Mat4, vec3, Vec3 } from "../utils/MVU";
 import Mesh from "./Mesh.type";
 
 const PLANE_WIDTH = 50;
@@ -11,11 +12,6 @@ export interface Context {
    * The WebGL context
    */
   gl: WebGLRenderingContext;
-
-  /**
-   * The WebGLProgram of the main shader
-   */
-  program: WebGLProgram;
 
   /**
    * The canvas that the WebGL context is attached to
@@ -59,49 +55,7 @@ export interface Context {
     index: WebGLBuffer | null;
   };
 
-  /**
-   * The locations of attributes in the shader program
-   */
-  attributeLocations: {
-    /**
-     * The location of the vertex attribute in the shader program
-     */
-    vertex: number;
-
-    /**
-     * The location of the normals attribute in the shader program
-     */
-    normal: number;
-    /**
-     * The location of the heightmap texture attribute in the shader program
-     */
-    texture_coords: number;
-  };
-
-  /**
-   * The uniform locations for the shader
-   */
-  uniformLocations: {
-    /**
-     * The projection matrix uniform location for the shader
-     */
-    projection: WebGLUniformLocation;
-
-    /**
-     * The view matrix uniform location for the shader
-     */
-    modelView: WebGLUniformLocation;
-
-    /**
-     * The height map uniform location for the shader
-     */
-    normalMatrix: WebGLUniformLocation | null;
-
-    /**
-     * The height map uniform location for the shader
-     */
-    heightMap: WebGLUniformLocation;
-  };
+  shader: PrimaryShader
 
   /**
    * The projection matrix for the camera
@@ -122,6 +76,8 @@ export interface Context {
   normalMatrix: Mat4;
 
   plane: PlaneInfo;
+
+  wireframe: boolean;
 }
 
 export interface PlaneInfo {
@@ -134,59 +90,68 @@ export interface PlaneInfo {
 const createContext = (
   gl: WebGLRenderingContext,
   canvas: HTMLCanvasElement,
-  program: WebGLProgram
 ): Context => {
-  const projectionLocation = gl.getUniformLocation(
-    program,
-    "uProjectionMatrix"
-  );
-  const modelViewLocation = gl.getUniformLocation(program, "uModelViewMatrix");
-  //const normalMatrixLocation = gl.getUniformLocation(program, "uNormalMatrix");
-  const heightMapLocation = gl.getUniformLocation(program, "uHeightMap");
 
-  if (
-    !projectionLocation ||
-    !modelViewLocation /*|| !normalMatrixLocation*/ ||
-    !heightMapLocation
-  )
-    throw new Error(
-      `Could not get uniform locations ${projectionLocation} ${modelViewLocation} ${heightMapLocation}`
-    );
+    const buffers = {
+        vertex: gl.createBuffer(),
+        normal: gl.createBuffer(),
+        texture: gl.createBuffer(),
+        index: gl.createBuffer(),
+    };
+    if(!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index) {
+        throw new Error("Failed to create buffers");
+    }
 
+    const plane : PlaneInfo= {
+        scale: vec3(1, 1, 1),
+        position: vec3(0, 0, 0),
+        rotation: vec3(0, 0, 0),
+        mesh_data: generatePlane(PLANE_WIDTH, PLANE_HEIGHT, 100),
+    };
+
+    const shader = new PrimaryShader(gl);
+
+    shader.use();
+
+
+    shader.setPositionBuffer(buffers.vertex);
+    shader.setNormalBuffer(buffers.normal);
+    shader.setTextureCoordsBuffer(buffers.texture);
+    shader.setIndexBuffer(buffers.index);
+
+    shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
+    shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);
+    shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
+    shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
+
+    
   return {
     gl,
     canvas,
-    program,
     heightMap: null,
     heightMapImage: null,
-    buffers: {
-      vertex: null,
-      normal: null,
-      texture: null,
-      index: null,
-    },
-    attributeLocations: {
-      vertex: gl.getAttribLocation(program, "aVertex"),
-      normal: gl.getAttribLocation(program, "aNormal"),
-      texture_coords: gl.getAttribLocation(program, "aHeightmap"),
-    },
-    uniformLocations: {
-      projection: projectionLocation,
-      modelView: modelViewLocation,
-      normalMatrix: null,
-      heightMap: heightMapLocation,
-    },
+    buffers: buffers,
     projectionMatrix: identity(4),
     modelViewMatrix: identity(4),
     normalMatrix: identity(4),
-    plane: {
-      scale: [1, 1, 1],
-      position: [0, 0, 0],
-      rotation: [0, 0, 0],
-      mesh_data: generatePlane(PLANE_WIDTH, PLANE_HEIGHT, 100),
-    },
+    plane: plane,
+    wireframe: false,
+    shader: shader
   };
 };
+
+export function refreshBuffers(context: Context) {
+    const { gl, buffers, shader, plane } = context;
+
+    if(!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index) {
+        throw new Error("Failed to get buffers");
+    }
+
+    shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
+    shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);
+    shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
+    shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
+}
 
 export function setPlaneSubdivision(context: Context, subdivision: number) {
   context.plane.mesh_data = generatePlane(
@@ -223,5 +188,7 @@ export function translatePlane(context: Context, translation: Vec3) {
         context.plane.position[2] + translation[2]
     ]
 }
+
+
 
 export default createContext;
