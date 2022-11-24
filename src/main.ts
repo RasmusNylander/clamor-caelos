@@ -1,7 +1,7 @@
 import { setupWebGL } from "./utils/WebGLUtils";
 import { initShadersFromString } from "./utils/initShaders";
 import { mainShader } from "./glsl/shader.src";
-import createContext, { Context } from "./model/Context";
+import createContext, { Context, setPlaneSubdivision } from "./model/Context";
 import heightMapPath from "./assets/images/perlin_512.png";
 import { generatePlane, plane as Plane} from "./utils/Mesh";
 import {
@@ -20,7 +20,8 @@ import {
   vec3,
 } from "./utils/MVU";
 
-const plane = generatePlane(100, 100, 100);
+
+const SHOULD_LOOP = true;
 
 function onFatalError(error: Error): void {
   console.error(error);
@@ -63,9 +64,23 @@ export async function main(): Promise<void> {
   loadHeightmap(gl, context);
   bindBuffers(gl, context);
   setupMatrices(context);
-  drawScene(gl, context);
+
+  handleHTMLInput(context);
+
+  requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
   return;
 }
+
+// Refresh the plane mesh and buffers
+function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
+	  const { plane } = context;
+	  const { mesh_data } = plane;
+	  const { vertices, normals, uvs, indices } = mesh_data;
+	bindBuffers(gl, context);
+
+
+}
+
 function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
   context.heightMapImage = document.getElementById(
     "heightmap"
@@ -130,16 +145,16 @@ function createBuffers(gl: WebGLRenderingContext, context: Context): void {
 
 function bindBuffers(gl: WebGLRenderingContext, context: Context): void {
   gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.vertex);
-  gl.bufferData(gl.ARRAY_BUFFER, plane.vertices, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.vertices, gl.STATIC_DRAW);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.normal);
-  gl.bufferData(gl.ARRAY_BUFFER, plane.normals, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.normals, gl.STATIC_DRAW);
 
   gl.bindBuffer(gl.ARRAY_BUFFER, context.buffers.texture);
-  gl.bufferData(gl.ARRAY_BUFFER, plane.uvs, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER, context.plane.mesh_data.uvs, gl.STATIC_DRAW);
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, plane.indices, gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, context.plane.mesh_data.indices, gl.STATIC_DRAW);
   console.debug("All buffers bound");
 }
 
@@ -152,7 +167,7 @@ function setupMatrices(context: Context): void {
   );
 
   let viewMatrix = identity(4);
-  const eye = vec3(20, 0, 0);
+  const eye = vec3(-30, 15, 0);
   const at = vec3(0, 0, 0);
   const up = vec3(0, 1, 0);
   const viewRotation = lookAt(eye, at, up);
@@ -160,7 +175,7 @@ function setupMatrices(context: Context): void {
 
   let modelMatrix = identity(4);
   const modelTranslation = translation(vec3(0, 0, 0));
-  const modelScale = scalingMatrix(vec3(100, 100, 1));
+  const modelScale = scalingMatrix(vec3(1, 1, 1));
   const rotateX = rotationMatrixX(-90);
   const rotateY = rotationMatrixY(0);
 
@@ -185,7 +200,17 @@ function setupMatrices(context: Context): void {
   );
 }
 
-function drawScene(gl: WebGLRenderingContext, context: Context): void {
+function handleHTMLInput(context: Context): void {
+	  const subdivisionsSlider = document.getElementById("subdivisions") as HTMLInputElement;
+	  subdivisionsSlider.oninput = function (event) {
+		const subdivisions = parseInt(subdivisionsSlider.value);
+		setPlaneSubdivision(context, subdivisions);
+		refreshPlane(context.gl, context);
+		console.debug("Subdivisions changed to:", subdivisions);
+	  }
+}
+
+function drawScene(gl: WebGLRenderingContext, context: Context, loop: boolean, time: number): void {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.uniformMatrix4fv(
@@ -208,8 +233,10 @@ function drawScene(gl: WebGLRenderingContext, context: Context): void {
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
 
   //gl.drawArrays(gl.TRIANGLES, 0, plane.vertices.length);
-  gl.drawElements(gl.TRIANGLES, plane.indices.length, gl.UNSIGNED_SHORT, 0);
+  gl.drawElements(gl.TRIANGLES, context.plane.mesh_data.indices.length, gl.UNSIGNED_SHORT, 0);
   console.debug("Scene drawn");
+
+  if (loop) requestAnimationFrame((time) => drawScene(gl, context, loop, time));
 }
 
 export function createEmptyArrayBuffer(
