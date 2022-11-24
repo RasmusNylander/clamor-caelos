@@ -35,25 +35,25 @@ export interface Context {
          * the vertex buffer
          * This is where the vertices are stored
          */
-        vertex: WebGLBuffer;
+        vertex: WebGLBuffer  | null;
 
         /**
          * The normal buffer
          * This is where the normals are stored to calculate lighting and more
          */
-        normal: WebGLBuffer;
+        normal: WebGLBuffer  | null;
 
         /**
          * The texture coordinate buffer
          * This is where the texture coordinates are stored to map the texture to the vertices
          */
-        texture: WebGLBuffer;
+        texture: WebGLBuffer  | null;
         
         /**
          * The index buffer
          * This is where the indices are stored to tell the GPU which vertices to draw
          */
-        index: WebGLBuffer;
+        index: WebGLBuffer  | null;
     };
 
     /**
@@ -73,7 +73,7 @@ export interface Context {
         /**
          * The location of the heightmap texture attribute in the shader program
          */
-        heightmap: number;
+        texture_coords: number;
     };
 
     /**
@@ -124,25 +124,10 @@ export interface Context {
 
 
 const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, program: WebGLProgram): Context => {
-    
-    const vertex = gl.createBuffer();
-    const normal = gl.createBuffer();
-    const texture = gl.createBuffer();
-    const index = gl.createBuffer();
-
-    if( !vertex || !normal || !texture || !index ) throw new Error("Could not create buffers");
-    
-    console.debug("Buffers created:", vertex, normal, texture, index);
-
-    console.debug("Loading uniform locations");
-
-
     const projectionLocation = gl.getUniformLocation(program, "uProjectionMatrix");
     const modelViewLocation = gl.getUniformLocation(program, "uModelViewMatrix");
     //const normalMatrixLocation = gl.getUniformLocation(program, "uNormalMatrix");
     const heightMapLocation = gl.getUniformLocation(program, "uHeightMap");
-
-
 
     if( !projectionLocation || !modelViewLocation /*|| !normalMatrixLocation*/ || !heightMapLocation ) throw new Error(`Could not get uniform locations ${projectionLocation} ${modelViewLocation} ${heightMapLocation}`);
 
@@ -153,15 +138,15 @@ const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, pro
         heightMap: null,
         heightMapImage: null,
         buffers: {
-            vertex: vertex,
-            normal: normal,
-            texture: texture,
-            index: index
+            vertex: null,
+            normal: null,
+            texture: null,
+            index: null
         },
         attributeLocations: {
             vertex: gl.getAttribLocation(program, "aVertex"),
             normal: gl.getAttribLocation(program, "aNormal"),
-            heightmap: gl.getAttribLocation(program, "aHeightmap")
+            texture_coords: gl.getAttribLocation(program, "aHeightmap")
         },
         uniformLocations: {
             projection: projectionLocation,

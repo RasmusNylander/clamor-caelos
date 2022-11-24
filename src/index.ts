@@ -1,3 +1,3 @@
 import {main} from "./main";
 
-window.onload = main;
+window.onload = () => main();
