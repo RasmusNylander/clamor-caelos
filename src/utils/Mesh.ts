@@ -1,6 +1,6 @@
 // Generate a plane with the given width and height and subdivisions
 
-import Plane from "../model/Plane.type";
+import Mesh from "../model/Mesh.type";
 import { vec2, vec3 } from "./MVU";
 
 /*
@@ -10,8 +10,8 @@ import { vec2, vec3 } from "./MVU";
  * @param {number} subdivisions - The number of subdivisions of the plane
  * @returns {Plane} - The plane
  */
-export function generatePlane(width: number, height: number, subdivisions: number): Plane {
-  const plane: Plane = {
+export function generatePlane(width: number, height: number, subdivisions: number): Mesh {
+  const plane: Mesh = {
     vertices: [],
     normals: [],
     uvs: [],
@@ -64,3 +64,35 @@ export function generatePlane(width: number, height: number, subdivisions: numbe
     indices,
   };
 }
+
+
+export const cube : Mesh = {
+  vertices: [
+    vec3(-1, -1, -1),
+    vec3(-1, -1, 1),
+    vec3(-1, 1, -1),
+    vec3(-1, 1, 1),
+    vec3(1, -1, -1),
+  ],
+  normals: [
+    vec3(-1, -1, -1),
+    vec3(-1, -1, 1),
+    vec3(-1, 1, -1),
+    vec3(-1, 1, 1),
+    vec3(1, -1, -1),
+  ],
+  uvs: [
+    vec2(0, 0),
+    vec2(0, 1),
+    vec2(1, 0),
+    vec2(1, 1),
+  ],
+  indices: [
+    vec3(0, 1, 2),
+    vec3(1, 3, 2),
+    vec3(0, 2, 4),
+    vec3(2, 3, 4),
+    vec3(0, 4, 1),
+    vec3(4, 3, 1),
+  ],
+};
