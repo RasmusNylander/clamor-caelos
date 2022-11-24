@@ -20,7 +20,8 @@ import {
   vec3,
 } from "./utils/MVU";
 
-const plane = Plane; //generatePlane(100, 100, 254);
+const plane = generatePlane(100, 100, 100);
+
 function onFatalError(error: Error): void {
   console.error(error);
   let alertMessage: string = error.message;
