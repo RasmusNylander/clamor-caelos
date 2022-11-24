@@ -10,15 +10,15 @@ uniform mat4 uModelViewMatrix;
 
 uniform sampler2D uHeightMap;
  
-mat4 hi;
-
+varying vec4 v_Color;
 void main() {
     
     
     vec4 height = texture2D(uHeightMap, aHeightmap.xy);
-    vec3 pos = aVertex + aNormal * height.r * aHeightmap.z;
+    vec3 vertex = aVertex + aNormal * height.r * aHeightmap.z;
 
-    gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1.0);
+    gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(vertex, 1.0);
     
+    v_Color = vec4(0.0, 0.0, 0.0, 1.0);
 
 }
