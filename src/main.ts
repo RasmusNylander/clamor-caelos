@@ -195,12 +195,6 @@ function setupMatrices(context: Context): void {
   const normMat = inverse(context.modelViewMatrix);
   if (normMat.ok) context.normalMatrix = normMat.value;
 
-  console.debug(
-    "Matrices loaded:",
-    context.projectionMatrix,
-    context.modelViewMatrix,
-    context.normalMatrix
-  );
 }
 
 function handleHTMLInput(context: Context): void {
