@@ -40,6 +40,10 @@ function onFatalError(error: Error): void {
   return;
 }
 
+/**
+ *  the main function that is called when the page is loaded
+ *  @todo We should probably move all the rendering code to a Renderer class to split the rendering from the hydraulic simulation logic
+ */
 export async function main(): Promise<void> {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   if (!canvas) return onFatalError(new Error("Could not find canvas element"));
@@ -62,12 +66,22 @@ export async function main(): Promise<void> {
   return;
 }
 
-// Refresh the plane mesh and buffers
+/**
+ * Refresh the plane buffers and recalculate the matrices. 
+ * @todo Later the matrices will be recalculated automatically in both the Camera class and a Mesh class, but for now we do it manually.
+ * @param gl The WebGL context
+ * @param context The application context
+ */
 function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
   refreshBuffers(context);
   setupMatrices(context);
 }
 
+/**
+ * Load the heightmap image and set it as a texture
+ * @param gl The WebGL context
+ * @param context The application context
+ */
 function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
   context.heightMapImage = document.getElementById(
     "heightmap"
@@ -82,13 +96,27 @@ function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
   context.shader.setHeightMap(heightMap, context.heightMapImage);
   console.debug("Heightmap loaded:", context.heightMapImage);
 }
+
+/**
+ * Setup the matrices for the scene
+ * @todo Later the matrices will be recalculated automatically in both the Camera class and a Mesh class, but for now we do it manually.
+ * @param context The context to setup the matrices for
+ */
 function setupMatrices(context: Context): void {
+
+  /**
+   *  We start with calculating the projection matrix.
+   */
   context.projectionMatrix = perspective(
     45,
     context.canvas.width / context.canvas.height,
     0.1,
     150
   );
+
+  /**
+   *  Camera View Matrix
+   */
 
   let viewMatrix = identity(4);
   const eye = vec3(50, 30, 20);
@@ -97,6 +125,8 @@ function setupMatrices(context: Context): void {
   const viewRotation = lookAt(eye, at, up);
   viewMatrix = multiply(viewMatrix, viewRotation);
 
+
+  /** Model Matrix of the terrain plane */
   let modelMatrix = identity(4);
   const modelTranslation = translation(context.plane.position);
   const modelScale = scalingMatrix(context.plane.scale);
@@ -111,9 +141,10 @@ function setupMatrices(context: Context): void {
   modelMatrix = multiply(modelMatrix, modelScale);
 
   context.modelViewMatrix = multiply(viewMatrix, modelMatrix);
-  context.normalMatrix = identity(4);
 
-  // calculate normal matrix
+
+  /** Normal matrix of the view * model */
+  context.normalMatrix = identity(4);
   const normMat = inverse(context.modelViewMatrix);
   if (normMat.ok) context.normalMatrix = normMat.value;
 
@@ -124,6 +155,12 @@ function setupMatrices(context: Context): void {
   
 }
 
+
+/**
+ * Handle the HTML input, such as the subdivision slider.
+ * @todo We should probably move this to a separate input handler class/file and make it more generic and clean.
+ * @param context The application context
+ */
 function handleHTMLInput(context: Context): void {
   const subdivisionsSlider = document.getElementById(
     "subdivisions"
@@ -141,6 +178,13 @@ function handleHTMLInput(context: Context): void {
   };
 }
 
+/**
+ * Draw the scene, and request the next frame if we should loop
+ * @param gl The WebGL context
+ * @param context The application context
+ * @param loop Whether to render the scene continuously
+ * @param time The time in milliseconds since the last frame
+ */
 function drawScene(
   gl: WebGLRenderingContext,
   context: Context,
