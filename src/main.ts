@@ -1,7 +1,7 @@
 import { setupWebGL } from "./utils/WebGLUtils";
 import { initShadersFromString } from "./utils/initShaders";
 import { mainShader } from "./glsl/shader.src";
-import createContext, { Context, setPlaneSubdivision } from "./model/Context";
+import createContext, { Context, rotatePlane, setPlaneSubdivision } from "./model/Context";
 import heightMapPath from "./assets/images/perlin_512.png";
 import { generatePlane, plane as Plane} from "./utils/Mesh";
 import {
@@ -14,6 +14,7 @@ import {
   perspective,
   rotationMatrixX,
   rotationMatrixY,
+  rotationMatrixZ,
   scale,
   scalingMatrix,
   translation,
@@ -77,8 +78,7 @@ function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
 	  const { mesh_data } = plane;
 	  const { vertices, normals, uvs, indices } = mesh_data;
 	bindBuffers(gl, context);
-
-
+	setupMatrices(context);
 }
 
 function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
@@ -163,25 +163,28 @@ function setupMatrices(context: Context): void {
     45,
     context.canvas.width / context.canvas.height,
     0.1,
-    100
+    150
   );
 
   let viewMatrix = identity(4);
-  const eye = vec3(-30, 15, 0);
-  const at = vec3(0, 0, 0);
+  const eye = vec3(50, 30, 20);
+  const at = vec3(0, -10, 0);
   const up = vec3(0, 1, 0);
   const viewRotation = lookAt(eye, at, up);
   viewMatrix = multiply(viewMatrix, viewRotation);
 
   let modelMatrix = identity(4);
-  const modelTranslation = translation(vec3(0, 0, 0));
-  const modelScale = scalingMatrix(vec3(1, 1, 1));
-  const rotateX = rotationMatrixX(-90);
-  const rotateY = rotationMatrixY(0);
+  const modelTranslation = translation(context.plane.position);
+  const modelScale = scalingMatrix(context.plane.scale);
+  const rotateX = rotationMatrixX(-90 + context.plane.rotation[0]);
+  const rotateY = rotationMatrixY(context.plane.rotation[1]);
+  const rotateZ = rotationMatrixZ(context.plane.rotation[2]);
+
 
   modelMatrix = multiply(modelMatrix, modelTranslation);
-  modelMatrix = multiply(modelMatrix, rotateY);
   modelMatrix = multiply(modelMatrix, rotateX);
+  modelMatrix = multiply(modelMatrix, rotateY);
+  modelMatrix = multiply(modelMatrix, rotateZ);
   modelMatrix = multiply(modelMatrix, modelScale);
 
   context.modelViewMatrix = multiply(viewMatrix, modelMatrix);
@@ -213,6 +216,10 @@ function handleHTMLInput(context: Context): void {
 function drawScene(gl: WebGLRenderingContext, context: Context, loop: boolean, time: number): void {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+
+  rotatePlane(context, vec3(0, 0, .1));
+  setupMatrices(context);
+
   gl.uniformMatrix4fv(
     context.uniformLocations.projection,
     false,
@@ -232,9 +239,7 @@ function drawScene(gl: WebGLRenderingContext, context: Context, loop: boolean, t
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
 
-  //gl.drawArrays(gl.TRIANGLES, 0, plane.vertices.length);
   gl.drawElements(gl.TRIANGLES, context.plane.mesh_data.indices.length, gl.UNSIGNED_SHORT, 0);
-  console.debug("Scene drawn");
 
   if (loop) requestAnimationFrame((time) => drawScene(gl, context, loop, time));
 }
