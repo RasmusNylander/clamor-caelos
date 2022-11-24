@@ -21,12 +21,12 @@ export interface Context {
     /**
      * The heightmap in the form of a  WebGL texture
      */
-    heightMap: WebGLTexture;
+    heightMap: WebGLTexture | null;
 
     /**
      * The html element that contains the height map image
      */
-    heightMapImage: HTMLImageElement;
+    heightMapImage: HTMLImageElement | null;
 
     // The buffers to send stuff to the GPU
     buffers: {
@@ -94,7 +94,7 @@ export interface Context {
         /**
          * The height map uniform location for the shader
          */
-        normalMatrix: WebGLUniformLocation;
+        normalMatrix: WebGLUniformLocation | null;
 
         /**
          * The height map uniform location for the shader
@@ -123,7 +123,7 @@ export interface Context {
 };
 
 
-const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, program: WebGLProgram, heightMap: WebGLTexture, heightMapImage: HTMLImageElement): Context => {
+const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, program: WebGLProgram): Context => {
     
     const vertex = gl.createBuffer();
     const normal = gl.createBuffer();
@@ -132,19 +132,26 @@ const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, pro
 
     if( !vertex || !normal || !texture || !index ) throw new Error("Could not create buffers");
     
-    const projectionLocation = gl.getUniformLocation(program, "projection");
-    const modelViewLocation = gl.getUniformLocation(program, "modelView");
-    const normalMatrixLocation = gl.getUniformLocation(program, "normalMatrix");
-    const heightMapLocation = gl.getUniformLocation(program, "heightMap");
+    console.debug("Buffers created:", vertex, normal, texture, index);
 
-    if( !projectionLocation || !modelViewLocation || !normalMatrixLocation || !heightMapLocation ) throw new Error("Could not get uniform locations");
+    console.debug("Loading uniform locations");
+
+
+    const projectionLocation = gl.getUniformLocation(program, "uProjectionMatrix");
+    const modelViewLocation = gl.getUniformLocation(program, "uModelViewMatrix");
+    //const normalMatrixLocation = gl.getUniformLocation(program, "uNormalMatrix");
+    const heightMapLocation = gl.getUniformLocation(program, "uHeightMap");
+
+
+
+    if( !projectionLocation || !modelViewLocation /*|| !normalMatrixLocation*/ || !heightMapLocation ) throw new Error(`Could not get uniform locations ${projectionLocation} ${modelViewLocation} ${heightMapLocation}`);
 
     return {
         gl,
         canvas,
         program,
-        heightMap,
-        heightMapImage,
+        heightMap: null,
+        heightMapImage: null,
         buffers: {
             vertex: vertex,
             normal: normal,
@@ -152,14 +159,14 @@ const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, pro
             index: index
         },
         attributeLocations: {
-            vertex: gl.getAttribLocation(program, "vertex"),
-            normal: gl.getAttribLocation(program, "normal"),
-            heightmap: gl.getAttribLocation(program, "heightmap")
+            vertex: gl.getAttribLocation(program, "aVertex"),
+            normal: gl.getAttribLocation(program, "aNormal"),
+            heightmap: gl.getAttribLocation(program, "aHeightmap")
         },
         uniformLocations: {
             projection: projectionLocation,
             modelView: modelViewLocation,
-            normalMatrix: normalMatrixLocation,
+            normalMatrix: null,
             heightMap: heightMapLocation
         },
         projectionMatrix: identity(4),
@@ -167,3 +174,5 @@ const createContext = (gl: WebGLRenderingContext, canvas: HTMLCanvasElement, pro
         normalMatrix: identity(4)
     };
 }
+
+export default createContext;
