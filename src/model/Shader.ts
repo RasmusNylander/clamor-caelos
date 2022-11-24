@@ -4,9 +4,9 @@ import { initShadersFromString } from "../utils/initShaders";
  * Class to represent a shader.
  * Having it as a class allows us to easier manage the shader program and its attributes and uniforms.
  */
-class Shader {
-  private readonly gl: WebGLRenderingContext;
-  private readonly program: WebGLProgram;
+export default class Shader {
+  protected readonly gl: WebGLRenderingContext;
+  protected readonly program: WebGLProgram;
 
   constructor(
     gl: WebGLRenderingContext,
