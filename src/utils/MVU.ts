@@ -238,7 +238,7 @@ export function orthographic<
 	);
 }
 
-export function perspective<Num extends number>(fov_y: number, aspect: number, near: Num, far: Exclude<number, Num>): Mat4 {
+export function perspective<Num extends number>(fov_y: number, aspect: number, near: Num, far: Num): Mat4 {
 	let f = 1.0 / Math.tan(radians(fov_y) / 2);
 	let d = far - near;
 
