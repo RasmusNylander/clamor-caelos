@@ -1,7 +1,7 @@
 // Generate a plane with the given width and height and subdivisions
 
 import Plane from "../model/Plane.type";
-import { vec3 } from "./MVU";
+import { vec2, vec3 } from "./MVU";
 
 /*
  * Generate a plane with the given width and height and subdivisions
@@ -10,7 +10,7 @@ import { vec3 } from "./MVU";
  * @param {number} subdivisions - The number of subdivisions of the plane
  * @returns {Plane} - The plane
  */
-export function plane(width, height, subdivisions: number): Plane {
+export function generatePlane(width: number, height: number, subdivisions: number): Plane {
   const plane: Plane = {
     vertices: [],
     normals: [],
@@ -41,8 +41,7 @@ export function plane(width, height, subdivisions: number): Plane {
 
       vertices.push(vec3(x, -z, 0));
       normals.push(vec3(normal[0], normal[1], normal[2]));
-      uvs.push(ix / gridX);
-      uvs.push(1 - iz / gridZ);
+      uvs.push(vec2(ix / gridX , 1 - (iz / gridZ)));
     }
   }
 
@@ -53,8 +52,8 @@ export function plane(width, height, subdivisions: number): Plane {
       let c = ix + 1 + gridX1 * (iz + 1);
       let d = ix + 1 + gridX1 * iz;
 
-      indices.push(a, b, d);
-      indices.push(b, c, d);
+      indices.push(vec3(a, b, d));
+      indices.push(vec3(b, c, d));
     }
   }
 
