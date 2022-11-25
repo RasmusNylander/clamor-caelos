@@ -82,19 +82,19 @@ function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
  * @param context The application context
  */
 function loadHeightmap(gl: WebGLRenderingContext, context: Context): Result<void> {
-  context.heightMapImage = document.getElementById(
+  const heightMapImage = document.getElementById(
     "heightmap"
   ) as HTMLImageElement;
 
-  if (context.heightMapImage === null)
+  if (heightMapImage === null)
     return error("Could not find heightmap image element");
-  context.heightMapImage.src = heightMapPath;
+  heightMapImage.src = heightMapPath;
 
   const heightMap = gl.createTexture();
   if (!heightMap)
     return error("Could not create heightmap texture");
-  context.shader.setHeightMap(heightMap, context.heightMapImage);
-  console.debug("Heightmap loaded:", context.heightMapImage);
+  context.shader.setHeightMap(heightMap, heightMapImage);
+  console.debug("Heightmap loaded:", heightMapImage);
   return ok();
 }
 

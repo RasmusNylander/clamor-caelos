@@ -23,11 +23,6 @@ export interface Context {
 	 */
 	heightMap: WebGLTexture | null;
 
-	/**
-	 * The html element that contains the height map image
-	 */
-	heightMapImage: HTMLImageElement | null;
-
 	// The buffers to send stuff to the GPU
 	buffers: {
 		/**
@@ -129,7 +124,6 @@ const createContext = (
 		gl,
 		canvas,
 		heightMap: null,
-		heightMapImage: null,
 		buffers: buffers,
 		projectionMatrix: identity(4),
 		modelViewMatrix: identity(4),
