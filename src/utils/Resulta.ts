@@ -15,7 +15,7 @@ export function error<E extends Error = Error>(error_message: string): Failure<E
 export function error<E extends Error = Error, C extends Error = Error>(error_message: string, cause: C): Failure<E>;
 export function error<E extends Error = Error, C extends Error = Error>(e: E | string, cause?: C): Failure<E> {
 	if (typeof e === "string") {
-		const error = cause === undefined ? new Error(e) : new Error(e, {cause: cause});
+		const error = (cause === undefined) ? new Error(e) : new Error(e, {cause: cause});
 		return {ok: false, error: error as E};
 	}
 
