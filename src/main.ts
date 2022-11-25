@@ -69,9 +69,11 @@ export async function main(): Promise<void> {
  * @param gl The WebGL context
  * @param context The application context
  */
-function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
-	if (!refreshBuffers(context).ok) return;
+function refreshPlane(gl: WebGLRenderingContext, context: Context): Result<void> {
+	const result = refreshBuffers(context);
+	if (!result.ok) return error("Could not refresh buffers", result.error);
 	setupMatrices(context);
+	return ok();
 }
 
 /**
@@ -162,7 +164,8 @@ function handleHTMLInput(context: Context): void {
 	subdivisionsSlider.oninput = function (event) {
 		const subdivisions = parseInt(subdivisionsSlider.value);
 		setPlaneSubdivision(context, subdivisions);
-		refreshPlane(context.gl, context);
+		const result = refreshPlane(context.gl, context);
+		if (!result.ok) return onFatalError(result.error);
 		console.debug("Subdivisions changed to:", subdivisions);
 	};
 
