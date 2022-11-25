@@ -62,8 +62,8 @@ export default class PrimaryShader extends Shader {
 		gl.texImage2D(
 			gl.TEXTURE_2D,
 			0,
-			gl.RGB,
-			gl.RGB,
+			gl.RGBA,
+			gl.RGBA,
 			gl.UNSIGNED_BYTE,
 			texImageSource
 		);

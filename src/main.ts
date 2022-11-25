@@ -54,7 +54,7 @@ export async function main(): Promise<void> {
 	const heightMap = await fetchHeightmap(heightMapPath);
 	if (!heightMap.ok) return onFatalError(heightMap.error);
 
-	const possibleError = loadHeightmap(gl, context);
+	const possibleError = await loadHeightmap(gl, context);
 	if (!possibleError.ok) return onFatalError(possibleError.error);
 	setupMatrices(context);
 	const inputSetupResult = handleHTMLInput(context);
@@ -77,26 +77,29 @@ function refreshPlane(gl: WebGLRenderingContext, context: Context): Result<void>
 	return ok();
 }
 
-/**
- * Load the heightmap image and set it as a texture
- * @param gl The WebGL context
- * @param context The application context
- */
-function loadHeightmap(gl: WebGLRenderingContext, context: Context): Result<void> {
-	const heightMapImage = document.getElementById(
+async function loadHeightmap(gl: WebGLRenderingContext, context: Context): Promise<Result<void>> {
+	const htmlImageElement = document.getElementById(
 		"heightmap"
 	) as HTMLImageElement;
+	if (htmlImageElement === null) return error("Could not find heightmap image element");
+	htmlImageElement.src = heightMapPath;
 
-	if (heightMapImage === null)
-		return error("Could not find heightmap image element");
-	heightMapImage.src = heightMapPath;
+	const texture = gl.createTexture();
+	if (texture === null) return error("Could not create texture");
 
-	const heightMap = gl.createTexture();
-	if (!heightMap)
-		return error("Could not create heightmap texture");
-	context.shader.setHeightMap(heightMap, heightMapImage);
-	console.debug("Heightmap loaded:", heightMapImage);
+	const heightMap = await fetchHeightmap(heightMapPath);
+	if (!heightMap.ok) return error("Could not fetch heightmap", heightMap.error);
+	context.shader.setHeightMap(texture, heightMap.value);
 	return ok();
+}
+
+async function fetchHeightmap(url: URL): Promise<Result<ImageBitmap>> {
+	const response = await fetch(url);
+	if (!response.ok) return error(`Bad response: ${response.status} ${response.statusText}`);
+	if (response.body === null) return error("Response body is null");
+	const blob = await response.blob();
+	const image = await createImageBitmap(blob);
+	return ok(image);
 }
 
 /**
