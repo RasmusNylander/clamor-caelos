@@ -1,8 +1,7 @@
 export type Success<T> = { readonly ok: true, value: T };
-export type Failure<E extends Error = Error> = { readonly ok: false, error: E};
+export type Failure<E extends Error = Error> = { readonly ok: false, error: E };
 
 export type Result<T, E extends Error = Error> = Success<T> | Failure<E>;
-
 
 
 export function ok(): Success<void>;

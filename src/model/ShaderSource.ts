@@ -1,4 +1,4 @@
 export interface ShaderSource {
-    vertex: string;
-    fragment: string;
+	vertex: string;
+	fragment: string;
 }

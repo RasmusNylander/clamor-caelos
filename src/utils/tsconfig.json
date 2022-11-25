@@ -13,7 +13,7 @@
     "initShaders.ts",
     "WebGLUtils.ts",
     "MVU.ts",
-    "Resulta.ts",
+    "Resulta.ts"
   ],
   "exclude": [
     "./webpack.config.ts"

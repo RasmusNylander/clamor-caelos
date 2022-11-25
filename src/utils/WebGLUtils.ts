@@ -143,7 +143,6 @@ export function create3DContext(canvas: HTMLCanvasElement, opt_attribs?: WebGLCo
 }
 
 
-
 // @ts-ignore
 /**
  * Provides requestAnimationFrame in a cross browser way.

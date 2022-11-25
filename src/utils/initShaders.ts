@@ -9,7 +9,7 @@ export enum ShaderType {
 	FRAGMENT_SHADER,
 }
 
-function shaderTypeToString(shaderType: ShaderType) : string {
+function shaderTypeToString(shaderType: ShaderType): string {
 	switch (shaderType) {
 		case ShaderType.VERTEX_SHADER:
 			return "vertex shader";

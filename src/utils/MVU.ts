@@ -225,7 +225,7 @@ export function orthographic<
 	A extends number, B extends number,
 	C extends number, D extends number,
 	E extends number, F extends number
-	>(left: A, right: Exclude<B, A>, bottom: C, top: Exclude<D, C>, near: E, far: Exclude<F, E>): Mat4 {
+>(left: A, right: Exclude<B, A>, bottom: C, top: Exclude<D, C>, near: E, far: Exclude<F, E>): Mat4 {
 	let w = right - left;
 	let h = top - bottom;
 	let d = far - near;
@@ -383,9 +383,9 @@ export function lerp<T extends Vec>(a: T, b: sameVec<typeof a>, t: number): same
 export function lerp<T extends Mat>(a: T, b: sameMat<typeof a>, t: number): sameMat<typeof a>;
 export function lerp(a: Vec | Mat, b: Vec | Mat, t: number): Vec | Mat {
 	if (typeof a[0] !== "number") // Matrix
-		{ // @ts-ignore
-			return <Mat>a.map((v, i) => lerp(v, <Vec>b[i], t));
-		}
+	{ // @ts-ignore
+		return <Mat>a.map((v, i) => lerp(v, <Vec>b[i], t));
+	}
 
 	return <Vec>a.map((v, i) => <number>v + (<number>b[i] - <number>v) * t);
 }
@@ -484,9 +484,9 @@ export function multiplyElementWise<T extends Vec>(a: T, b: sameVec<typeof a>): 
 export function multiplyElementWise<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function multiplyElementWise(a: Vec | Mat, b: Vec | Mat): Vec | Mat {
 	if (typeof a[0] !== "number") // Matrix
-		{ // @ts-ignore
-			return <Mat>a.map((v, i) => multiplyElementWise(v, <Vec>b[i]));
-		}
+	{ // @ts-ignore
+		return <Mat>a.map((v, i) => multiplyElementWise(v, <Vec>b[i]));
+	}
 
 	// @ts-ignore
 	return <Vec>a.map((v, i) => v * <number>b[i]);
@@ -495,10 +495,9 @@ export function multiplyElementWise(a: Vec | Mat, b: Vec | Mat): Vec | Mat {
 export function divideElementWise<T extends Vec>(a: T, b: sameVec<typeof a>): T;
 export function divideElementWise<T extends Mat>(a: T, b: sameMat<typeof a>): T;
 export function divideElementWise(a: Vec | Mat, b: Vec | Mat): Vec | Mat {
-	if (typeof a[0] !== "number")
-		{ // @ts-ignore
-			return <Mat>a.map((v, i) => divideElementWise(v, <Vec>b[i]));
-		}
+	if (typeof a[0] !== "number") { // @ts-ignore
+		return <Mat>a.map((v, i) => divideElementWise(v, <Vec>b[i]));
+	}
 
 	// @ts-ignore
 	return <Vec>a.map((v, i) => v / <number>b[i]);
@@ -729,7 +728,7 @@ namespace MVUtest {
 		let expected = rotationMatrixZ(45);
 		if (equal(rotation, expected)) return ok();
 		// Allow for some error due to floating point precision
-		if(almostEqual(rotation, expected, 0.0000001)) return ok();
+		if (almostEqual(rotation, expected, 0.0000001)) return ok();
 
 		return error("rotateAxisTo should return rotation given non-orthogonal axes\nExpected: " + expected + "\nActual:   " + rotation);
 	}
