@@ -2,6 +2,7 @@ import PrimaryShader from "../shaders/PrimaryShader";
 import {generatePlane} from "../utils/Mesh";
 import {identity, Mat4, vec3, Vec3} from "../utils/MVU";
 import Mesh from "./Mesh.type";
+import {error, ok, Result} from "../utils/Resulta";
 
 const PLANE_WIDTH = 50;
 const PLANE_HEIGHT = 50;
@@ -82,20 +83,16 @@ export interface PlaneInfo {
 	mesh_data: Mesh;
 }
 
-const createContext = (
-	gl: WebGLRenderingContext,
-	canvas: HTMLCanvasElement,
-): Context => {
-
+export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElement): Result<Context> {
 	const buffers = {
 		vertex: gl.createBuffer(),
 		normal: gl.createBuffer(),
 		texture: gl.createBuffer(),
 		index: gl.createBuffer(),
 	};
-	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index) {
-		throw new Error("Failed to create buffers");
-	}
+
+	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index)
+		return error("Could not create buffers");
 
     const plane : PlaneInfo= {
         scale: vec3(.8, .8, .8),
@@ -108,7 +105,6 @@ const createContext = (
 
 	shader.use();
 
-
 	shader.setPositionBuffer(buffers.vertex);
 	shader.setNormalBuffer(buffers.normal);
 	shader.setTextureCoordsBuffer(buffers.texture);
@@ -119,8 +115,7 @@ const createContext = (
 	shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
 	shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
 
-
-	return {
+	return ok({
 		gl,
 		canvas,
 		heightMap: null,
@@ -131,8 +126,8 @@ const createContext = (
 		plane: plane,
 		wireframe: false,
 		shader: shader
-	};
-};
+	});
+}
 
 export function refreshBuffers(context: Context) {
 	const {gl, buffers, shader, plane} = context;
@@ -182,6 +177,3 @@ export function translatePlane(context: Context, translation: Vec3) {
 		context.plane.position[2] + translation[2]
 	]
 }
-
-
-export default createContext;

@@ -1,5 +1,5 @@
 import {setupWebGL} from "./utils/WebGLUtils";
-import createContext, {Context, refreshBuffers, rotatePlane, setPlaneSubdivision,} from "./model/Context";
+import {Context, createContext, refreshBuffers, rotatePlane, setPlaneSubdivision,} from "./model/Context";
 import heightMapPath from "./assets/images/terrain_1024.png";
 import {
 	flattenMat,
@@ -47,7 +47,12 @@ export async function main(): Promise<void> {
 	gl.enable(gl.CULL_FACE);
 	gl.cullFace(gl.BACK);
 
-	const context = createContext(gl, canvas);
+	const contextResult = createContext(gl, canvas);
+	if (!contextResult.ok) return onFatalError(contextResult.error);
+	const context = contextResult.value;
+
+	const heightMap = await fetchHeightmap(heightMapPath);
+	if (!heightMap.ok) return onFatalError(heightMap.error);
 
 	const possibleError = loadHeightmap(gl, context);
 	if (!possibleError.ok) return onFatalError(possibleError.error);
