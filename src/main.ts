@@ -7,7 +7,7 @@ import createContext, {
   rotatePlane,
   setPlaneSubdivision,
 } from "./model/Context";
-import heightMapPath from "./assets/images/perlin_512.png";
+import heightMapPath from "./assets/images/terrain_1024.png";
 import {
   flatten,
   flattenMat,
@@ -47,11 +47,11 @@ function onFatalError(error: Error): void {
 export async function main(): Promise<void> {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
   if (!canvas) return onFatalError(new Error("Could not find canvas element"));
-  const gl = setupWebGL(canvas);
+  const gl = setupWebGL(canvas, { premultipliedAlpha: false });
   if (!gl) return onFatalError(new Error("WebGL isn't available"));
 
   gl.viewport(0, 0, canvas.width, canvas.height);
-  gl.clearColor(0.9, 0.9, 0.9, 1);
+  gl.clearColor(0.9, 0.9, 0.9, 0);
   gl.enable(gl.DEPTH_TEST);
   gl.enable(gl.CULL_FACE);
   gl.cullFace(gl.BACK);
@@ -67,7 +67,7 @@ export async function main(): Promise<void> {
 }
 
 /**
- * Refresh the plane buffers and recalculate the matrices. 
+ * Refresh the plane buffers and recalculate the matrices.
  * @todo Later the matrices will be recalculated automatically in both the Camera class and a Mesh class, but for now we do it manually.
  * @param gl The WebGL context
  * @param context The application context
@@ -103,7 +103,6 @@ function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
  * @param context The context to setup the matrices for
  */
 function setupMatrices(context: Context): void {
-
   /**
    *  We start with calculating the projection matrix.
    */
@@ -125,7 +124,6 @@ function setupMatrices(context: Context): void {
   const viewRotation = lookAt(eye, at, up);
   viewMatrix = multiply(viewMatrix, viewRotation);
 
-
   /** Model Matrix of the terrain plane */
   let modelMatrix = identity(4);
   const modelTranslation = translation(context.plane.position);
@@ -142,7 +140,6 @@ function setupMatrices(context: Context): void {
 
   context.modelViewMatrix = multiply(viewMatrix, modelMatrix);
 
-
   /** Normal matrix of the view * model */
   context.normalMatrix = identity(4);
   const normMat = inverse(context.modelViewMatrix);
@@ -152,9 +149,7 @@ function setupMatrices(context: Context): void {
   context.shader.setProjectionMatrix(flattenMat(context.projectionMatrix));
   context.shader.setModelViewMatrix(flattenMat(context.modelViewMatrix));
   context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
-  
 }
-
 
 /**
  * Handle the HTML input, such as the subdivision slider.
@@ -170,6 +165,14 @@ function handleHTMLInput(context: Context): void {
     setPlaneSubdivision(context, subdivisions);
     refreshPlane(context.gl, context);
     console.debug("Subdivisions changed to:", subdivisions);
+  };
+
+  // wireframe toggle button
+  const wireframeToggle = document.getElementById(
+    "wireframeToggle"
+  ) as HTMLInputElement;
+  wireframeToggle.onclick = function (event) {
+    context.wireframe = !context.wireframe;
   };
 
   const tilingSlider = document.getElementById("tiling") as HTMLInputElement;
@@ -196,7 +199,6 @@ function drawScene(
   rotatePlane(context, vec3(0, 0, 0.1));
   setupMatrices(context);
 
-
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
   gl.drawElements(
     context.wireframe ? gl.LINES : gl.TRIANGLES,
@@ -207,4 +209,3 @@ function drawScene(
 
   if (loop) requestAnimationFrame((time) => drawScene(gl, context, loop, time));
 }
-

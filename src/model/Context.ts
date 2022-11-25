@@ -103,7 +103,7 @@ const createContext = (
     }
 
     const plane : PlaneInfo= {
-        scale: vec3(1, 1, 1),
+        scale: vec3(.8, .8, .8),
         position: vec3(0, 0, 0),
         rotation: vec3(0, 0, 0),
         mesh_data: generatePlane(PLANE_WIDTH, PLANE_HEIGHT, 100),

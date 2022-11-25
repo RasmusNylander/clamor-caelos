@@ -16,8 +16,11 @@ varying vec4 v_Color;
 
 
 void main() {
+
+    float depth = 8.0;
+
     vec4 height = texture2D(uHeightMap, aTexCoords);
-    vec3 pos = aVertex + aNormal * height.r * 25.0;
+    vec3 pos = aVertex + aNormal * height.r * depth;
     gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(pos, 1.0);
     v_Color = vec4(height.r, height.r, height.r, 1.0);
 }
