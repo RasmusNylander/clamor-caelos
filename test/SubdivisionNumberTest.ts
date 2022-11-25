@@ -1,24 +1,5 @@
-import {Result} from "../src/utils/Resulta";
 import {subdivision} from "../src/model/SubdivisionNumber";
-import assert = require("node:assert");
-
-function expect<T extends any>(value: T) {
-  return {
-	toBeEqual: (expected: T) => {
-	  if (value !== expected) {
-		throw new Error(`${value} is not equal to ${expected}`);
-	  }
-	},
-  };
-}
-
-function expectFailure(value: Result<any>) {
-	return assert(value.ok === false);
-}
-
-function expectSuccess(value: Result<any>) {
-	return assert(value.ok === true);
-}
+import {expect, expectFailure} from "./utls/Expect";
 
 describe("SubdivisionNumber", () => {
 	it("should return error when given NaN", () => {
