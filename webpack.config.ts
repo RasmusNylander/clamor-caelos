@@ -1,7 +1,5 @@
 //TS
-import * as webpack from "webpack";
 import * as path from "path";
-import * as fs from "fs";
 import "ts-loader";
 import * as HTMLWebpackPlugin from "html-webpack-plugin";
 
@@ -36,6 +34,11 @@ module.exports = (env: any) => {
           test: /\.css$/,
           use: ["style-loader", "css-loader"],
         },
+        {
+          test: /test\.tsx?$/,
+          use: 'mocha-loader',
+          exclude: /node_modules/,
+        }
       ],
     },
     resolve: {
