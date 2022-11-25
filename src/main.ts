@@ -48,7 +48,7 @@ export async function main(): Promise<void> {
 	gl.cullFace(gl.BACK);
 
 	const contextResult = createContext(gl, canvas);
-	if (!contextResult.ok) return onFatalError(contextResult.error);
+	if (!contextResult.ok) return onFatalError(new Error("Could not create context", {cause: contextResult.error}));
 	const context = contextResult.value;
 
 	const heightMap = await fetchHeightmap(heightMapPath);
