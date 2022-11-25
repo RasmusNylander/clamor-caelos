@@ -57,7 +57,8 @@ export async function main(): Promise<void> {
 	const possibleError = loadHeightmap(gl, context);
 	if (!possibleError.ok) return onFatalError(possibleError.error);
 	setupMatrices(context);
-	handleHTMLInput(context);
+	const inputSetupResult = handleHTMLInput(context);
+	if (!inputSetupResult.ok) return onFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
 
 	requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
 	return;
@@ -157,10 +158,11 @@ function setupMatrices(context: Context): void {
  * @todo We should probably move this to a separate input handler class/file and make it more generic and clean.
  * @param context The application context
  */
-function handleHTMLInput(context: Context): void {
+function handleHTMLInput(context: Context): Result<void> {
 	const subdivisionsSlider = document.getElementById(
 		"subdivisions"
 	) as HTMLInputElement;
+	if (subdivisionsSlider === null) return error("Could not find subdivisions slider");
 	subdivisionsSlider.oninput = function (event) {
 		const subdivisions = parseInt(subdivisionsSlider.value);
 		setPlaneSubdivision(context, subdivisions);
@@ -173,14 +175,18 @@ function handleHTMLInput(context: Context): void {
 	const wireframeToggle = document.getElementById(
 		"wireframeToggle"
 	) as HTMLInputElement;
+	if (wireframeToggle === null) return error("Could not find wireframe toggle");
 	wireframeToggle.onclick = function (event) {
 		context.wireframe = !context.wireframe;
 	};
 
 	const tilingSlider = document.getElementById("tiling") as HTMLInputElement;
+	if (tilingSlider === null) return error("Could not find tiling slider");
 	tilingSlider.oninput = function (event) {
 		const tiling = parseInt(tilingSlider.value);
 	};
+
+	return ok();
 }
 
 /**
