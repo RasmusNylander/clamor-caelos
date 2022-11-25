@@ -70,7 +70,7 @@ export async function main(): Promise<void> {
  * @param context The application context
  */
 function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
-	refreshBuffers(context);
+	if (!refreshBuffers(context).ok) return;
 	setupMatrices(context);
 }
 

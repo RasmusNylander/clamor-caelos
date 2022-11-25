@@ -129,17 +129,21 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 	});
 }
 
-export function refreshBuffers(context: Context) {
-	const {gl, buffers, shader, plane} = context;
+export function refreshBuffers(context: Context): Result<void> {
+	const {buffers, shader, plane} = context;
 
-	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index) {
-		throw new Error("Failed to get buffers");
-	}
+	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index)
+		return error(`Cannot refresh buffers, as one or more buffers are null!
+Vertex: ${buffers.vertex}
+Normal: ${buffers.normal}
+Texture: ${buffers.texture}
+Index: ${buffers.index}`);
 
 	shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
 	shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);
 	shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
 	shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
+	return ok();
 }
 
 export function setPlaneSubdivision(context: Context, subdivision: number) {
