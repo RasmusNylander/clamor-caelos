@@ -9,7 +9,6 @@ import createContext, {
 } from "./model/Context";
 import heightMapPath from "./assets/images/terrain_1024.png";
 import {
-  flatten,
   flattenMat,
   identity,
   inverse,
@@ -19,12 +18,11 @@ import {
   rotationMatrixX,
   rotationMatrixY,
   rotationMatrixZ,
-  scale,
   scalingMatrix,
   translation,
   vec3,
 } from "./utils/MVU";
-import Shader from "./model/Shader";
+import {error, ok, Result} from "./utils/Resulta";
 
 const SHOULD_LOOP = true;
 
@@ -58,7 +56,8 @@ export async function main(): Promise<void> {
 
   const context = createContext(gl, canvas);
 
-  loadHeightmap(gl, context);
+  const possibleError = loadHeightmap(gl, context);
+  if (!possibleError.ok) return onFatalError(possibleError.error);
   setupMatrices(context);
   handleHTMLInput(context);
 
@@ -82,19 +81,21 @@ function refreshPlane(gl: WebGLRenderingContext, context: Context): void {
  * @param gl The WebGL context
  * @param context The application context
  */
-function loadHeightmap(gl: WebGLRenderingContext, context: Context): void {
+function loadHeightmap(gl: WebGLRenderingContext, context: Context): Result<void> {
   context.heightMapImage = document.getElementById(
     "heightmap"
   ) as HTMLImageElement;
 
-  if (!context.heightMapImage)
-    return onFatalError(new Error("Could not find heightmap image"));
+  if (context.heightMapImage === null)
+    return error("Could not find heightmap image element");
   context.heightMapImage.src = heightMapPath;
 
   const heightMap = gl.createTexture();
-  if (!heightMap) return onFatalError(new Error("Could not create heightmap"));
+  if (!heightMap)
+    return error("Could not create heightmap texture");
   context.shader.setHeightMap(heightMap, context.heightMapImage);
   console.debug("Heightmap loaded:", context.heightMapImage);
+  return ok();
 }
 
 /**
