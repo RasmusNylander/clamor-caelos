@@ -52,9 +52,6 @@ export async function main(): Promise<void> {
 		if (!contextResult.ok) return reportFatalError(new Error("Could not create context", {cause: contextResult.error}));
 		const context = contextResult.value;
 
-		const heightMap = await fetchHeightmap(heightMapPath);
-		if (!heightMap.ok) return reportFatalError(heightMap.error);
-
 		const possibleError = await loadHeightmap(gl, context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);
 		setupMatrices(context);
