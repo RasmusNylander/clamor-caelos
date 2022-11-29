@@ -24,7 +24,7 @@ export default class Shader {
 		this.gl.useProgram(this.program);
 	}
 
-	public getUniformLocation(name: string): Result<WebGLUniformLocation> {
+	protected getUniformLocation(name: string): Result<WebGLUniformLocation> {
 		const location = this.gl.getUniformLocation(this.program, name);
 		if (location) return ok(location);
 		return error(`Could not find uniform ${name}`);
