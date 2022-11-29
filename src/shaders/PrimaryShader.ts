@@ -10,24 +10,13 @@ export default class PrimaryShader extends Shader {
 			require("./fragment.glsl")
 		);
 
-		let result: Result<any>;
-
 		const uniformsResult = this.findUniforms("uModelViewMatrix", "uProjectionMatrix", "uHeightMap");
 		if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
 		[this.uModelViewMatrixLocation, this.uProjectionMatrixLocation, this.uHeightMapLocation] = uniformsResult.value;
 
-
-		result = this.getAttribLocation("aPosition");
-		if (!result.ok) throw result.error;
-		this.aPositionLocation = result.value;
-
-		result = this.getAttribLocation("aNormal");
-		if (!result.ok) throw result.error;
-		this.aNormalLocation = result.value;
-
-		result = this.getAttribLocation("aTexCoords");
-		if (!result.ok) throw result.error;
-		this.aTextureCoordsLocation = result.value;
+		const attributesResult = this.findAttributes("aPosition", "aNormal", "aTexCoords");
+		if (!attributesResult.ok) throw new Error("Cannot find attributes", {cause: attributesResult.error});
+		[this.aPositionLocation, this.aNormalLocation, this.aTextureCoordsLocation] = attributesResult.value;
 	}
 
 	private findUniforms(...names: string[]): Result<Array<WebGLUniformLocation>> {
@@ -37,6 +26,18 @@ export default class PrimaryShader extends Shader {
 		const results = names.map(name => this.getUniformLocation(name));
 		if (results.every(result => result.ok))
 			return ok(results.map(result => (result as Success<WebGLUniformLocation>).value));
+
+		const errors = results.filter(result => !result.ok).map(result => (result as Failure).error);
+		return error(errors.join("\n\n"));
+	}
+
+	private findAttributes(...names: string[]): Result<Array<GLint>> {
+		if (names === null || names.length === 0)
+			return error("No attributes were specified");
+
+		const results = names.map(name => this.getAttribLocation(name));
+		if (results.every(result => result.ok))
+			return ok(results.map(result => (result as Success<GLint>).value));
 
 		const errors = results.filter(result => !result.ok).map(result => (result as Failure).error);
 		return error(errors.join("\n\n"));
