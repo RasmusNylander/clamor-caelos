@@ -57,6 +57,8 @@
  * visible.
  */
 
+import {error, ok, Result} from "./Resulta";
+
 /**
  * Creates the HTLM for a failure message
  * @param {string} canvasContainerId id of container of th
@@ -113,11 +115,9 @@ export function setupWebGL(canvas: HTMLCanvasElement, opt_attribs?: WebGLContext
 		return null;
 	}
 
-	const context = <WebGLRenderingContext>create3DContext(canvas, opt_attribs);
-	if (!context) {
-		showLink(OTHER_PROBLEM);
-	}
-	return context;
+	const context = create3DContext(canvas, opt_attribs);
+	if (!context.ok) showLink(OTHER_PROBLEM);
+	return context.ok ? context.value : null;
 }
 
 
@@ -127,19 +127,15 @@ export function setupWebGL(canvas: HTMLCanvasElement, opt_attribs?: WebGLContext
  *     from. If one is not passed in one will be created.
  * @return {!WebGLContext} The created context.
  */
-export function create3DContext(canvas: HTMLCanvasElement, opt_attribs?: WebGLContextAttributes): RenderingContext | null {
+export function create3DContext(canvas: HTMLCanvasElement, opt_attribs?: WebGLContextAttributes): Result<WebGLRenderingContext> {
 	const names = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
-	let context = null;
-	for (let ii = 0; ii < names.length; ++ii) {
+	for (const name of names) {
 		try {
-			context = canvas.getContext(names[ii], opt_attribs);
-		} catch (e) {
-			continue;
-		}
-		return context;
+			const context = <WebGLRenderingContext>canvas.getContext(name, opt_attribs);
+			if (context !== null) return ok(context);
+		} catch (e) {}
 	}
-	// Should throw some kind of error here.
-	return context;
+	return error("Could not create WebGL context", new Error("It doesn't appear your computer can support WebGL; see https://get.webgl.org/troubleshooting/"));
 }
 
 
