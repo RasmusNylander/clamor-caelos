@@ -30,7 +30,7 @@ export default class Shader {
 		return error(`Could not find uniform ${name}`);
 	}
 
-	public getAttributeLocation(name: string): Result<GLint> {
+	protected getAttributeLocation(name: string): Result<GLint> {
 		const location = this.gl.getAttribLocation(this.program, name);
 		if (location >= 0) return ok(location);
 		return error(`Could not find attribute ${name}`);
