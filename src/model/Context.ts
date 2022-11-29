@@ -107,10 +107,10 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 
 	shader.setBuffers(buffers.vertex, buffers.normal, buffers.texture, buffers.index);
 
-	shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
-	shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);
-	shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
-	shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
+	shader.setPositionBufferData(plane.mesh_data.vertices);
+	shader.setNormalBufferData(plane.mesh_data.normals);
+	shader.setTextureCoordsBufferData(plane.mesh_data.uvs);
+	shader.setIndexBufferData(plane.mesh_data.indices);
 
 	return ok({
 		gl,
@@ -136,10 +136,10 @@ Normal: ${buffers.normal}
 Texture: ${buffers.texture}
 Index: ${buffers.index}`);
 
-	shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
-	shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);
-	shader.setTextureCoordsBufferData(buffers.texture, plane.mesh_data.uvs);
-	shader.setIndexBufferData(buffers.index, plane.mesh_data.indices);
+	shader.setPositionBufferData(plane.mesh_data.vertices);
+	shader.setNormalBufferData(plane.mesh_data.normals);
+	shader.setTextureCoordsBufferData(plane.mesh_data.uvs);
+	shader.setIndexBufferData(plane.mesh_data.indices);
 	return ok();
 }
 
