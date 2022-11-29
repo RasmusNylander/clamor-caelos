@@ -133,9 +133,9 @@ export default class PrimaryShader extends Shader {
 
 	/** Set buffer data */
 
-	private setBufferData(buffer: WebGLBuffer, data: Float32Array): void {
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-		this.gl.bufferData(this.gl.ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
+	private setBufferData(buffer: WebGLBuffer, data: Float32Array | Uint16Array, bufferType: BufferType = BufferType.ARRAY_BUFFER): void {
+		this.gl.bindBuffer(bufferType, buffer);
+		this.gl.bufferData(bufferType, data, this.gl.STATIC_DRAW);
 	}
 
 	public setPositionBufferData(data: Float32Array): void {
@@ -154,9 +154,12 @@ export default class PrimaryShader extends Shader {
 	}
 
 	public setIndexBufferData(data: Uint16Array): void {
-		if (this.indexBuffer !== undefined) {
-			this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-			this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, data, this.gl.STATIC_DRAW);
-		}
+		if (this.indexBuffer !== undefined)
+			this.setBufferData(this.indexBuffer, data, BufferType.ELEMENT_ARRAY_BUFFER);
 	}
+}
+
+enum BufferType {
+	ARRAY_BUFFER = WebGLRenderingContext.ARRAY_BUFFER,
+	ELEMENT_ARRAY_BUFFER = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
 }
