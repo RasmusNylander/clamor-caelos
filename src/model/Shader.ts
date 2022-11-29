@@ -1,4 +1,5 @@
 import {initShadersFromString} from "../utils/initShaders";
+import {error, ok, Result} from "../utils/Resulta";
 
 /**
  * Class to represent a shader.
@@ -23,48 +24,52 @@ export default class Shader {
 		this.gl.useProgram(this.program);
 	}
 
-	public getUniformLocation(name: string): WebGLUniformLocation | null {
-		return this.gl.getUniformLocation(this.program, name);
+	public getUniformLocation(name: string): Result<WebGLUniformLocation> {
+		const location = this.gl.getUniformLocation(this.program, name);
+		if (location) return ok(location);
+		return error(`Could not find uniform ${name}`);
 	}
 
-	public getAttribLocation(name: string): number {
-		return this.gl.getAttribLocation(this.program, name);
+	public getAttribLocation(name: string): Result<GLint> {
+		const location = this.gl.getAttribLocation(this.program, name);
+		if (location >= 0) return ok(location);
+		return error(`Could not find attribute ${name}`);
 	}
 
 	public setUniformMatrix4fv(
-		location: WebGLUniformLocation | null,
+		location: WebGLUniformLocation,
 		transpose: boolean,
 		value: Float32Array
-	): void {
-		if (location) this.gl.uniformMatrix4fv(location, transpose, value);
+	) {
+		this.gl.uniformMatrix4fv(location, transpose, value);
 	}
 
 	public setUniform1i(
-		location: WebGLUniformLocation | null,
+		location: WebGLUniformLocation,
 		value: number
 	): void {
-		if (location) this.gl.uniform1i(location, value);
+		this.gl.uniform1i(location, value);
 	}
 
 	public setUniform3fv(
-		location: WebGLUniformLocation | null,
+		location: WebGLUniformLocation,
 		value: Float32Array
 	): void {
-		if (location) this.gl.uniform3fv(location, value);
+		this.gl.uniform3fv(location, value);
 	}
 
 	public setUniform1f(
-		location: WebGLUniformLocation | null,
+		location: WebGLUniformLocation,
 		value: number
 	): void {
-		if (location) this.gl.uniform1f(location, value);
+		this.gl.uniform1f(location, value);
 	}
 
 	public setUniform2fv(
-		location: WebGLUniformLocation | null,
+		location: WebGLUniformLocation,
 		value: Float32Array
 	): void {
-		if (location) this.gl.uniform2fv(location, value);
+		this.gl.uniform2fv(location, value);
 	}
 
 	public setAttribPointer(

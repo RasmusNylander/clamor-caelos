@@ -1,4 +1,5 @@
 import Shader from "../model/Shader";
+import {Result} from "../utils/Resulta";
 
 // Primary shader
 export default class PrimaryShader extends Shader {
@@ -8,33 +9,54 @@ export default class PrimaryShader extends Shader {
 			require("./vertex.glsl"),
 			require("./fragment.glsl")
 		);
-		this.init();
+
+		let result: Result<any>;
+
+		result = this.getUniformLocation("uModelViewMatrix");
+		if (!result.ok) throw result.error;
+		this.uModelViewMatrixLocation = result.value;
+
+		result = this.getUniformLocation("uProjectionMatrix");
+		if (!result.ok) throw result.error;
+		this.uProjectionMatrixLocation = result.value;
+
+		// result = this.getUniformLocation("uNormalMatrix");
+		// if (!result.ok) throw result.error;
+		// this.uNormalMatrixLocation = result.value;
+
+		result = this.getUniformLocation("uHeightMap");
+		if (!result.ok) throw result.error;
+		this.uHeightMapLocation = result.value;
+
+		// result = this.getUniformLocation("uTiling");
+		// if (!result.ok) throw result.error;
+		// this.uTilingLocation = result.value;
+
+
+		result = this.getAttribLocation("aPosition");
+		if (!result.ok) throw result.error;
+		this.aPositionLocation = result.value;
+
+		result = this.getAttribLocation("aNormal");
+		if (!result.ok) throw result.error;
+		this.aNormalLocation = result.value;
+
+		result = this.getAttribLocation("aTexCoords");
+		if (!result.ok) throw result.error;
+		this.aTextureCoordsLocation = result.value;
 	}
 
 	// Uniforms
-	private uModelViewMatrixLocation: WebGLUniformLocation | null = null;
-	private uProjectionMatrixLocation: WebGLUniformLocation | null = null;
-	private uNormalMatrixLocation: WebGLUniformLocation | null = null;
-	private uHeightMapLocation: WebGLUniformLocation | null = null;
-	private uTilingLocation: WebGLUniformLocation | null = null;
+	private uModelViewMatrixLocation: WebGLUniformLocation;
+	private uProjectionMatrixLocation: WebGLUniformLocation;
+	// private uNormalMatrixLocation: WebGLUniformLocation;
+	private uHeightMapLocation: WebGLUniformLocation;
+	// private uTilingLocation: WebGLUniformLocation;
 
 	// Attributes
-	private aPositionLocation: number = -1;
-	private aNormalLocation: number = -1;
-	private aTextureCoordsLocation: number = -1;
-
-	public init(): void {
-		this.uModelViewMatrixLocation = this.getUniformLocation("uModelViewMatrix");
-		this.uProjectionMatrixLocation =
-			this.getUniformLocation("uProjectionMatrix");
-		this.uNormalMatrixLocation = this.getUniformLocation("uNormalMatrix");
-		this.uHeightMapLocation = this.getUniformLocation("uHeightMap");
-		this.uTilingLocation = this.getUniformLocation("uTiling");
-
-		this.aPositionLocation = this.getAttribLocation("aVertex");
-		this.aNormalLocation = this.getAttribLocation("aNormal");
-		this.aTextureCoordsLocation = this.getAttribLocation("aTexCoords");
-	}
+	private aPositionLocation: number;
+	private aNormalLocation: number;
+	private aTextureCoordsLocation: number;
 
 	public setModelViewMatrix(matrix: Float32Array): void {
 		this.setUniformMatrix4fv(this.uModelViewMatrixLocation, false, matrix);
@@ -44,9 +66,9 @@ export default class PrimaryShader extends Shader {
 		this.setUniformMatrix4fv(this.uProjectionMatrixLocation, false, matrix);
 	}
 
-	public setNormalMatrix(matrix: Float32Array): void {
-		this.setUniformMatrix4fv(this.uNormalMatrixLocation, false, matrix);
-	}
+	// public setNormalMatrix(matrix: Float32Array): void {
+	// 	this.setUniformMatrix4fv(this.uNormalMatrixLocation, false, matrix);
+	// }
 
 	public setHeightMap(
 		heightMap: WebGLTexture,
@@ -71,9 +93,9 @@ export default class PrimaryShader extends Shader {
 		this.setUniform1i(this.uHeightMapLocation, 0);
 	}
 
-	public setTiling(tiling: number): void {
-		this.setUniform1f(this.uTilingLocation, tiling);
-	}
+	// public setTiling(tiling: number): void {
+	// 	this.setUniform1f(this.uTilingLocation, tiling);
+	// }
 
 	/** Initialize buffers */
 

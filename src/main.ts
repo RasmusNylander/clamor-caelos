@@ -157,7 +157,7 @@ function setupMatrices(context: Context): void {
 	// set matrices in shader
 	context.shader.setProjectionMatrix(flattenMat(context.projectionMatrix));
 	context.shader.setModelViewMatrix(flattenMat(context.modelViewMatrix));
-	context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
+	// context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
 }
 
 /**
