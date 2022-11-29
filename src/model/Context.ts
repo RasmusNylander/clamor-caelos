@@ -105,10 +105,7 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 
 	shader.use();
 
-	shader.setPositionBuffer(buffers.vertex);
-	shader.setNormalBuffer(buffers.normal);
-	shader.setTextureCoordsBuffer(buffers.texture);
-	shader.setIndexBuffer(buffers.index);
+	shader.setBuffers(buffers.vertex, buffers.normal, buffers.texture, buffers.index);
 
 	shader.setPositionBufferData(buffers.vertex, plane.mesh_data.vertices);
 	shader.setNormalBufferData(buffers.normal, plane.mesh_data.normals);

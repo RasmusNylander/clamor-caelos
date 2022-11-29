@@ -71,6 +71,12 @@ export default class PrimaryShader extends Shader {
 	// }
 
 	/** Initialize buffers */
+	public setBuffers(vertexBuffer: WebGLBuffer, normalBuffer: WebGLBuffer, textureCoordsBuffer: WebGLBuffer, indexBuffer: WebGLBuffer): void {
+		this.setPositionBuffer(vertexBuffer);
+		this.setNormalBuffer(normalBuffer);
+		this.setTextureCoordsBuffer(textureCoordsBuffer);
+		this.setIndexBuffer(indexBuffer);
+	}
 
 	public setPositionBuffer(buffer: WebGLBuffer): void {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
