@@ -32,12 +32,21 @@ export interface Context {
 	projectionMatrix: Mat4;
 
 	/**
-	 * The model view matrix for the camera
+	 * The view matrix for the camera
 	 *
 	 * This is the matrix that will be used to transform the vertices
 	 * of the objects in the scene.
 	 */
-	modelViewMatrix: Mat4;
+	viewMatrix: Mat4;
+
+	/**
+	 * The model matrix for the camera
+	 *
+	 * This is the matrix that will be used to transform the vertices
+	 * of the objects in the scene.
+	 */
+	modelMatrix: Mat4;
+
 
 	/**
 	 * The normal matrix for the camera. This is the matrix that will be used to transform the normals of the objects in the scene.
@@ -78,7 +87,8 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 		canvas,
 		heightMap: null,
 		projectionMatrix: identity(4),
-		modelViewMatrix: identity(4),
+		viewMatrix: identity(4),
+		modelMatrix: identity(4),
 		normalMatrix: identity(4),
 		plane: plane,
 		wireframe: false,

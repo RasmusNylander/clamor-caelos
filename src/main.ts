@@ -144,16 +144,18 @@ function setupMatrices(context: Context): void {
 	modelMatrix = multiply(modelMatrix, rotateZ);
 	modelMatrix = multiply(modelMatrix, modelScale);
 
-	context.modelViewMatrix = multiply(viewMatrix, modelMatrix);
+	context.modelMatrix = modelMatrix;
+	context.viewMatrix = viewMatrix;
 
 	/** Normal matrix of the view * model */
 	context.normalMatrix = identity(4);
-	const normMat = inverse(context.modelViewMatrix);
+	const normMat = inverse(context.modelMatrix);
 	if (normMat.ok) context.normalMatrix = normMat.value;
 
 	// set matrices in shader
+	context.shader.setModelMatrix(context.modelMatrix);
+	context.shader.setViewMatrix(context.viewMatrix);
 	context.shader.setProjectionMatrix(context.projectionMatrix);
-	context.shader.setModelViewMatrix(context.modelViewMatrix);
 	// context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
 }
 

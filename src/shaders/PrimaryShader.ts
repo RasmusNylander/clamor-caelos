@@ -4,7 +4,8 @@ import {flattenMat, Mat4} from "../utils/MVU";
 // Primary shader
 export default class PrimaryShader extends Shader {
 	// Uniforms
-	private uModelViewMatrixLocation: WebGLUniformLocation;
+	private uModelMatrixLocation: WebGLUniformLocation;
+	private uViewMatrixLocation: WebGLUniformLocation;
 	private uProjectionMatrixLocation: WebGLUniformLocation;
 	// private uNormalMatrixLocation: WebGLUniformLocation;
 	private uHeightMapLocation: WebGLUniformLocation;
@@ -30,9 +31,9 @@ export default class PrimaryShader extends Shader {
 			require("./fragment.glsl")
 		);
 
-		const uniformsResult = this.findUniforms("uModelViewMatrix", "uProjectionMatrix", "uHeightMap");
+		const uniformsResult = this.findUniforms("uModelMatrix", "uViewMatrix", "uProjectionMatrix", "uHeightMap");
 		if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
-		[this.uModelViewMatrixLocation, this.uProjectionMatrixLocation, this.uHeightMapLocation] = uniformsResult.value;
+		[this.uModelMatrixLocation, this.uViewMatrixLocation, this.uProjectionMatrixLocation, this.uHeightMapLocation] = uniformsResult.value;
 
 		const attributesResult = this.findAttributes("aPosition", "aNormal", "aTexCoords");
 		if (!attributesResult.ok) throw new Error("Cannot find attributes", {cause: attributesResult.error});
@@ -48,8 +49,11 @@ export default class PrimaryShader extends Shader {
 		this.heightmap = heightmap;
 	}
 
-	public setModelViewMatrix(matrix: Mat4): void {
-		this.setUniformMatrix4fv(this.uModelViewMatrixLocation, false, flattenMat(matrix));
+	public setModelMatrix(matrix: Mat4): void {
+		this.setUniformMatrix4fv(this.uModelMatrixLocation, false, flattenMat(matrix));
+	}
+	public setViewMatrix(matrix: Mat4): void {
+		this.setUniformMatrix4fv(this.uViewMatrixLocation, false, flattenMat(matrix));
 	}
 
 	public setProjectionMatrix(matrix: Mat4): void {
