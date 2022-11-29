@@ -8,6 +8,7 @@ export default class PrimaryShader extends Shader {
 	private uProjectionMatrixLocation: WebGLUniformLocation;
 	// private uNormalMatrixLocation: WebGLUniformLocation;
 	private uHeightMapLocation: WebGLUniformLocation;
+	private heightmap: WebGLTexture;
 	// private uTilingLocation: WebGLUniformLocation;
 
 	// Attributes
@@ -20,6 +21,7 @@ export default class PrimaryShader extends Shader {
 	private normalBuffer: WebGLBuffer;
 	private textureCoordsBuffer: WebGLBuffer;
 	private indexBuffer: WebGLBuffer;
+
 
 	public constructor(gl: WebGLRenderingContext) {
 		super(
@@ -40,6 +42,10 @@ export default class PrimaryShader extends Shader {
 		if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
 		[this.vertexBuffer, this.normalBuffer, this.textureCoordsBuffer, this.indexBuffer] = buffersResult.value;
 		this.setBuffers();
+
+		const heightmap = gl.createTexture();
+		if (!heightmap) throw new Error("Cannot create height map texture");
+		this.heightmap = heightmap;
 	}
 
 	public setModelViewMatrix(matrix: Mat4): void {
@@ -55,13 +61,12 @@ export default class PrimaryShader extends Shader {
 	// }
 
 	public setHeightMap(
-		heightMap: WebGLTexture,
 		texImageSource: TexImageSource
 	): void {
 		const gl = this.gl;
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
 		gl.activeTexture(gl.TEXTURE0);
-		gl.bindTexture(gl.TEXTURE_2D, heightMap);
+		gl.bindTexture(gl.TEXTURE_2D, this.heightmap);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);

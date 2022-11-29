@@ -88,12 +88,9 @@ async function loadHeightmap(gl: WebGLRenderingContext, context: Context): Promi
 	if (htmlImageElement === null) return error("Could not find heightmap image element");
 	htmlImageElement.src = heightMapPath;
 
-	const texture = gl.createTexture();
-	if (texture === null) return error("Could not create texture");
-
 	const heightMap = await fetchHeightmap(heightMapPath);
 	if (!heightMap.ok) return error("Could not fetch heightmap", heightMap.error);
-	context.shader.setHeightMap(texture, heightMap.value);
+	context.shader.setHeightMap(heightMap.value);
 	return ok();
 }
 
