@@ -39,8 +39,9 @@ export async function main(): Promise<void> {
 	try {
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 		if (!canvas) return reportFatalError(new Error("Could not find canvas element"));
-		const gl = setupWebGL(canvas, {premultipliedAlpha: false});
-		if (!gl) return reportFatalError(new Error("WebGL isn't available"));
+		const glResult = setupWebGL(canvas, {premultipliedAlpha: false});
+		if (!glResult.ok) return reportFatalError(new Error("WebGL isn't available", {cause: glResult.error}));
+		const gl = glResult.value;
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 		gl.clearColor(0.9, 0.9, 0.9, 0);
