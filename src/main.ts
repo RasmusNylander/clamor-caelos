@@ -19,7 +19,7 @@ import {error, ok, Result} from "./utils/Resulta";
 
 const SHOULD_LOOP = true;
 
-function onFatalError(error: Error): void {
+function reportFatalError(error: Error): void {
 	console.error(error);
 	let alertMessage: string = error.message;
 	while (error.cause) {
@@ -38,9 +38,9 @@ function onFatalError(error: Error): void {
 export async function main(): Promise<void> {
 	try {
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-		if (!canvas) return onFatalError(new Error("Could not find canvas element"));
+		if (!canvas) return reportFatalError(new Error("Could not find canvas element"));
 		const gl = setupWebGL(canvas, {premultipliedAlpha: false});
-		if (!gl) return onFatalError(new Error("WebGL isn't available"));
+		if (!gl) return reportFatalError(new Error("WebGL isn't available"));
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
 		gl.clearColor(0.9, 0.9, 0.9, 0);
@@ -49,21 +49,21 @@ export async function main(): Promise<void> {
 		gl.cullFace(gl.BACK);
 
 		const contextResult = createContext(gl, canvas);
-		if (!contextResult.ok) return onFatalError(new Error("Could not create context", {cause: contextResult.error}));
+		if (!contextResult.ok) return reportFatalError(new Error("Could not create context", {cause: contextResult.error}));
 		const context = contextResult.value;
 
 		const heightMap = await fetchHeightmap(heightMapPath);
-		if (!heightMap.ok) return onFatalError(heightMap.error);
+		if (!heightMap.ok) return reportFatalError(heightMap.error);
 
 		const possibleError = await loadHeightmap(gl, context);
-		if (!possibleError.ok) return onFatalError(possibleError.error);
+		if (!possibleError.ok) return reportFatalError(possibleError.error);
 		setupMatrices(context);
 		const inputSetupResult = handleHTMLInput(context);
-		if (!inputSetupResult.ok) return onFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
+		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
 
 		requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
 	} catch (error) {
-		return onFatalError(error as Error);
+		return reportFatalError(error as Error);
 	}
 	return;
 }
@@ -174,7 +174,7 @@ function handleHTMLInput(context: Context): Result<void> {
 		const subdivisions = parseInt(subdivisionsSlider.value);
 		setPlaneSubdivision(context, subdivisions);
 		const result = refreshPlane(context.gl, context);
-		if (!result.ok) return onFatalError(result.error);
+		if (!result.ok) return reportFatalError(result.error);
 		console.debug("Subdivisions changed to:", subdivisions);
 	};
 
