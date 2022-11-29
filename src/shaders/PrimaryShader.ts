@@ -1,4 +1,5 @@
 import Shader from "../model/Shader";
+import {flattenMat, Mat4} from "../utils/MVU";
 
 // Primary shader
 export default class PrimaryShader extends Shader {
@@ -30,12 +31,12 @@ export default class PrimaryShader extends Shader {
 	private aNormalLocation: number;
 	private aTextureCoordsLocation: number;
 
-	public setModelViewMatrix(matrix: Float32Array): void {
-		this.setUniformMatrix4fv(this.uModelViewMatrixLocation, false, matrix);
+	public setModelViewMatrix(matrix: Mat4): void {
+		this.setUniformMatrix4fv(this.uModelViewMatrixLocation, false, flattenMat(matrix));
 	}
 
-	public setProjectionMatrix(matrix: Float32Array): void {
-		this.setUniformMatrix4fv(this.uProjectionMatrixLocation, false, matrix);
+	public setProjectionMatrix(matrix: Mat4): void {
+		this.setUniformMatrix4fv(this.uProjectionMatrixLocation, false, flattenMat(matrix));
 	}
 
 	// public setNormalMatrix(matrix: Float32Array): void {

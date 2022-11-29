@@ -2,7 +2,6 @@ import {setupWebGL} from "./utils/WebGLUtils";
 import {Context, createContext, refreshBuffers, rotatePlane, setPlaneSubdivision,} from "./model/Context";
 import heightMapPath from "./assets/images/terrain_1024.png";
 import {
-	flattenMat,
 	identity,
 	inverse,
 	lookAt,
@@ -156,8 +155,8 @@ function setupMatrices(context: Context): void {
 	if (normMat.ok) context.normalMatrix = normMat.value;
 
 	// set matrices in shader
-	context.shader.setProjectionMatrix(flattenMat(context.projectionMatrix));
-	context.shader.setModelViewMatrix(flattenMat(context.modelViewMatrix));
+	context.shader.setProjectionMatrix(context.projectionMatrix);
+	context.shader.setModelViewMatrix(context.modelViewMatrix);
 	// context.shader.setNormalMatrix(flattenMat(context.normalMatrix));
 }
 
