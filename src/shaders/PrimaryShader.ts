@@ -1,8 +1,27 @@
 import Shader from "../model/Shader";
 import {flattenMat, Mat4} from "../utils/MVU";
+import {error, ok, Result} from "../utils/Resulta";
 
 // Primary shader
 export default class PrimaryShader extends Shader {
+	// Uniforms
+	private uModelViewMatrixLocation: WebGLUniformLocation;
+	private uProjectionMatrixLocation: WebGLUniformLocation;
+	// private uNormalMatrixLocation: WebGLUniformLocation;
+	private uHeightMapLocation: WebGLUniformLocation;
+	// private uTilingLocation: WebGLUniformLocation;
+
+	// Attributes
+	private aPositionLocation: number;
+	private aNormalLocation: number;
+	private aTextureCoordsLocation: number;
+
+	// Buffers
+	private vertexBuffer: WebGLBuffer;
+	private normalBuffer: WebGLBuffer;
+	private textureCoordsBuffer: WebGLBuffer;
+	private indexBuffer: WebGLBuffer;
+
 	public constructor(gl: WebGLRenderingContext) {
 		super(
 			gl,
@@ -17,25 +36,22 @@ export default class PrimaryShader extends Shader {
 		const attributesResult = this.findAttributes("aPosition", "aNormal", "aTexCoords");
 		if (!attributesResult.ok) throw new Error("Cannot find attributes", {cause: attributesResult.error});
 		[this.aPositionLocation, this.aNormalLocation, this.aTextureCoordsLocation] = attributesResult.value;
+
+		const buffersResult = this.createBuffers(4);
+		if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
+		[this.vertexBuffer, this.normalBuffer, this.textureCoordsBuffer, this.indexBuffer] = buffersResult.value;
+		this.setBuffers();
 	}
 
-	// Uniforms
-	private uModelViewMatrixLocation: WebGLUniformLocation;
-	private uProjectionMatrixLocation: WebGLUniformLocation;
-	// private uNormalMatrixLocation: WebGLUniformLocation;
-	private uHeightMapLocation: WebGLUniformLocation;
-	// private uTilingLocation: WebGLUniformLocation;
-
-	// Attributes
-	private aPositionLocation: number;
-	private aNormalLocation: number;
-	private aTextureCoordsLocation: number;
-
-	// Buffers
-	private vertexBuffer: WebGLBuffer | undefined = undefined;
-	private normalBuffer: WebGLBuffer | undefined = undefined;
-	private textureCoordsBuffer: WebGLBuffer | undefined = undefined;
-	private indexBuffer: WebGLBuffer | undefined = undefined;
+	private createBuffers(num: number): Result<Array<WebGLBuffer>> {
+		const buffers = new Array<WebGLBuffer | null>(num);
+		for (; num > 0; num--) buffers[num - 1] = this.gl.createBuffer();
+		if (buffers.some(b => b === null)) {
+			const numNull = buffers.reduce((acc: number, b) => acc + (b === null ? 1 : 0), 0);
+			return error(`${num} buffers were requested, but only ${numNull} were created.`);
+		}
+		return ok(buffers as Array<WebGLBuffer>);
+	}
 
 	public setModelViewMatrix(matrix: Mat4): void {
 		this.setUniformMatrix4fv(this.uModelViewMatrixLocation, false, flattenMat(matrix));
@@ -77,16 +93,15 @@ export default class PrimaryShader extends Shader {
 	// }
 
 	/** Initialize buffers */
-	public setBuffers(vertexBuffer: WebGLBuffer, normalBuffer: WebGLBuffer, textureCoordsBuffer: WebGLBuffer, indexBuffer: WebGLBuffer): void {
-		this.setPositionBuffer(vertexBuffer);
-		this.setNormalBuffer(normalBuffer);
-		this.setTextureCoordsBuffer(textureCoordsBuffer);
-		this.setIndexBuffer(indexBuffer);
+	public setBuffers(): void {
+		this.setPositionBuffer();
+		this.setNormalBuffer();
+		this.setTextureCoordsBuffer();
+		this.bindIndexBuffer();
 	}
 
-	public setPositionBuffer(buffer: WebGLBuffer): void {
-		this.vertexBuffer = buffer;
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+	public setPositionBuffer(): void {
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
 		this.gl.vertexAttribPointer(
 			this.aPositionLocation,
 			3,
@@ -98,9 +113,8 @@ export default class PrimaryShader extends Shader {
 		this.gl.enableVertexAttribArray(this.aPositionLocation);
 	}
 
-	public setNormalBuffer(buffer: WebGLBuffer): void {
-		this.normalBuffer = buffer;
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+	public setNormalBuffer(): void {
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.normalBuffer);
 		this.gl.vertexAttribPointer(
 			this.aNormalLocation,
 			3,
@@ -112,9 +126,8 @@ export default class PrimaryShader extends Shader {
 		this.gl.enableVertexAttribArray(this.aNormalLocation);
 	}
 
-	public setTextureCoordsBuffer(buffer: WebGLBuffer): void {
-		this.textureCoordsBuffer = buffer;
-		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+	public setTextureCoordsBuffer(): void {
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordsBuffer);
 		this.gl.vertexAttribPointer(
 			this.aTextureCoordsLocation,
 			2,
@@ -126,9 +139,8 @@ export default class PrimaryShader extends Shader {
 		this.gl.enableVertexAttribArray(this.aTextureCoordsLocation);
 	}
 
-	public setIndexBuffer(buffer: WebGLBuffer): void {
-		this.indexBuffer = buffer
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, buffer);
+	public bindIndexBuffer(): void {
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 	}
 
 	/** Set buffer data */
@@ -139,23 +151,19 @@ export default class PrimaryShader extends Shader {
 	}
 
 	public setPositionBufferData(data: Float32Array): void {
-		if (this.vertexBuffer !== undefined)
-			this.setBufferData(this.vertexBuffer, data);
+		this.setBufferData(this.vertexBuffer, data);
 	}
 
 	public setNormalBufferData(data: Float32Array): void {
-		if (this.normalBuffer !== undefined)
-			this.setBufferData(this.normalBuffer, data);
+		this.setBufferData(this.normalBuffer, data);
 	}
 
 	public setTextureCoordsBufferData(data: Float32Array): void {
-		if (this.textureCoordsBuffer !== undefined)
-			this.setBufferData(this.textureCoordsBuffer, data);
+		this.setBufferData(this.textureCoordsBuffer, data);
 	}
 
 	public setIndexBufferData(data: Uint16Array): void {
-		if (this.indexBuffer !== undefined)
-			this.setBufferData(this.indexBuffer, data, BufferType.ELEMENT_ARRAY_BUFFER);
+		this.setBufferData(this.indexBuffer, data, BufferType.ELEMENT_ARRAY_BUFFER);
 	}
 }
 

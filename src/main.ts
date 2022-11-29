@@ -214,7 +214,7 @@ function drawScene(
 	rotatePlane(context, vec3(0, 0, 0.1));
 	setupMatrices(context);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, context.buffers.index);
+	context.shader.bindIndexBuffer();
 	gl.drawElements(
 		context.wireframe ? gl.LINES : gl.TRIANGLES,
 		context.plane.mesh_data.indices.length,

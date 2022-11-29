@@ -2,7 +2,7 @@ import PrimaryShader from "../shaders/PrimaryShader";
 import {generatePlane} from "../utils/Mesh";
 import {identity, Mat4, vec3, Vec3} from "../utils/MVU";
 import Mesh from "./Mesh.type";
-import {error, ok, Result} from "../utils/Resulta";
+import {ok, Result} from "../utils/Resulta";
 
 const PLANE_WIDTH = 50;
 const PLANE_HEIGHT = 50;
@@ -23,33 +23,6 @@ export interface Context {
 	 * The heightmap in the form of a  WebGL texture
 	 */
 	heightMap: WebGLTexture | null;
-
-	// The buffers to send stuff to the GPU
-	buffers: {
-		/**
-		 * the vertex buffer
-		 * This is where the vertices are stored
-		 */
-		vertex: WebGLBuffer | null;
-
-		/**
-		 * The normal buffer
-		 * This is where the normals are stored to calculate lighting and more
-		 */
-		normal: WebGLBuffer | null;
-
-		/**
-		 * The texture coordinate buffer
-		 * This is where the texture coordinates are stored to map the texture to the vertices
-		 */
-		texture: WebGLBuffer | null;
-
-		/**
-		 * The index buffer
-		 * This is where the indices are stored to tell the GPU which vertices to draw
-		 */
-		index: WebGLBuffer | null;
-	};
 
 	shader: PrimaryShader
 
@@ -84,16 +57,6 @@ export interface PlaneInfo {
 }
 
 export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElement): Result<Context> {
-	const buffers = {
-		vertex: gl.createBuffer(),
-		normal: gl.createBuffer(),
-		texture: gl.createBuffer(),
-		index: gl.createBuffer(),
-	};
-
-	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index)
-		return error("Could not create buffers");
-
     const plane : PlaneInfo= {
         scale: vec3(.8, .8, .8),
         position: vec3(0, 0, 0),
@@ -105,8 +68,6 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 
 	shader.use();
 
-	shader.setBuffers(buffers.vertex, buffers.normal, buffers.texture, buffers.index);
-
 	shader.setPositionBufferData(plane.mesh_data.vertices);
 	shader.setNormalBufferData(plane.mesh_data.normals);
 	shader.setTextureCoordsBufferData(plane.mesh_data.uvs);
@@ -116,7 +77,6 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 		gl,
 		canvas,
 		heightMap: null,
-		buffers: buffers,
 		projectionMatrix: identity(4),
 		modelViewMatrix: identity(4),
 		normalMatrix: identity(4),
@@ -127,14 +87,7 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 }
 
 export function refreshBuffers(context: Context): Result<void> {
-	const {buffers, shader, plane} = context;
-
-	if (!buffers.vertex || !buffers.normal || !buffers.texture || !buffers.index)
-		return error(`Cannot refresh buffers, as one or more buffers are null!
-Vertex: ${buffers.vertex}
-Normal: ${buffers.normal}
-Texture: ${buffers.texture}
-Index: ${buffers.index}`);
+	const {shader, plane} = context;
 
 	shader.setPositionBufferData(plane.mesh_data.vertices);
 	shader.setNormalBufferData(plane.mesh_data.normals);
