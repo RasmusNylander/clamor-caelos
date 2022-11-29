@@ -1,6 +1,5 @@
 import Shader from "../model/Shader";
 import {flattenMat, Mat4} from "../utils/MVU";
-import {error, ok, Result} from "../utils/Resulta";
 
 // Primary shader
 export default class PrimaryShader extends Shader {
@@ -41,16 +40,6 @@ export default class PrimaryShader extends Shader {
 		if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
 		[this.vertexBuffer, this.normalBuffer, this.textureCoordsBuffer, this.indexBuffer] = buffersResult.value;
 		this.setBuffers();
-	}
-
-	private createBuffers(num: number): Result<Array<WebGLBuffer>> {
-		const buffers = new Array<WebGLBuffer | null>(num);
-		for (; num > 0; num--) buffers[num - 1] = this.gl.createBuffer();
-		if (buffers.some(b => b === null)) {
-			const numNull = buffers.reduce((acc: number, b) => acc + (b === null ? 1 : 0), 0);
-			return error(`${num} buffers were requested, but only ${numNull} were created.`);
-		}
-		return ok(buffers as Array<WebGLBuffer>);
 	}
 
 	public setModelViewMatrix(matrix: Mat4): void {
