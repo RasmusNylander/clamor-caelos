@@ -36,31 +36,35 @@ function onFatalError(error: Error): void {
  *  @todo We should probably move all the rendering code to a Renderer class to split the rendering from the hydraulic simulation logic
  */
 export async function main(): Promise<void> {
-	const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-	if (!canvas) return onFatalError(new Error("Could not find canvas element"));
-	const gl = setupWebGL(canvas, {premultipliedAlpha: false});
-	if (!gl) return onFatalError(new Error("WebGL isn't available"));
+	try {
+		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+		if (!canvas) return onFatalError(new Error("Could not find canvas element"));
+		const gl = setupWebGL(canvas, {premultipliedAlpha: false});
+		if (!gl) return onFatalError(new Error("WebGL isn't available"));
 
-	gl.viewport(0, 0, canvas.width, canvas.height);
-	gl.clearColor(0.9, 0.9, 0.9, 0);
-	gl.enable(gl.DEPTH_TEST);
-	gl.enable(gl.CULL_FACE);
-	gl.cullFace(gl.BACK);
+		gl.viewport(0, 0, canvas.width, canvas.height);
+		gl.clearColor(0.9, 0.9, 0.9, 0);
+		gl.enable(gl.DEPTH_TEST);
+		gl.enable(gl.CULL_FACE);
+		gl.cullFace(gl.BACK);
 
-	const contextResult = createContext(gl, canvas);
-	if (!contextResult.ok) return onFatalError(new Error("Could not create context", {cause: contextResult.error}));
-	const context = contextResult.value;
+		const contextResult = createContext(gl, canvas);
+		if (!contextResult.ok) return onFatalError(new Error("Could not create context", {cause: contextResult.error}));
+		const context = contextResult.value;
 
-	const heightMap = await fetchHeightmap(heightMapPath);
-	if (!heightMap.ok) return onFatalError(heightMap.error);
+		const heightMap = await fetchHeightmap(heightMapPath);
+		if (!heightMap.ok) return onFatalError(heightMap.error);
 
-	const possibleError = await loadHeightmap(gl, context);
-	if (!possibleError.ok) return onFatalError(possibleError.error);
-	setupMatrices(context);
-	const inputSetupResult = handleHTMLInput(context);
-	if (!inputSetupResult.ok) return onFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
+		const possibleError = await loadHeightmap(gl, context);
+		if (!possibleError.ok) return onFatalError(possibleError.error);
+		setupMatrices(context);
+		const inputSetupResult = handleHTMLInput(context);
+		if (!inputSetupResult.ok) return onFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
 
-	requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
+		requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
+	} catch (error) {
+		return onFatalError(error as Error);
+	}
 	return;
 }
 
