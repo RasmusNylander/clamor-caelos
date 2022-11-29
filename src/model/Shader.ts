@@ -1,5 +1,5 @@
 import {initShadersFromString} from "../utils/initShaders";
-import {error, ok, Result} from "../utils/Resulta";
+import {error, Failure, ok, Result, Success} from "../utils/Resulta";
 
 /**
  * Class to represent a shader.
@@ -34,6 +34,30 @@ export default class Shader {
 		const location = this.gl.getAttribLocation(this.program, name);
 		if (location >= 0) return ok(location);
 		return error(`Could not find attribute ${name}`);
+	}
+
+	protected findUniforms(...names: string[]): Result<Array<WebGLUniformLocation>> {
+		if (names === null || names.length === 0)
+			return error("No uniforms were specified");
+
+		const results = names.map(name => this.getUniformLocation(name));
+		if (results.every(result => result.ok))
+			return ok(results.map(result => (result as Success<WebGLUniformLocation>).value));
+
+		const errors = results.filter(result => !result.ok).map(result => (result as Failure).error);
+		return error(errors.join("\n\n"));
+	}
+
+	protected findAttributes(...names: string[]): Result<Array<GLint>> {
+		if (names === null || names.length === 0)
+			return error("No attributes were specified");
+
+		const results = names.map(name => this.getAttributeLocation(name));
+		if (results.every(result => result.ok))
+			return ok(results.map(result => (result as Success<GLint>).value));
+
+		const errors = results.filter(result => !result.ok).map(result => (result as Failure).error);
+		return error(errors.join("\n\n"));
 	}
 
 	public setUniformMatrix4fv(
