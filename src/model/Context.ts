@@ -1,6 +1,6 @@
 import PrimaryShader from "../shaders/PrimaryShader";
 import {generatePlane} from "../utils/Mesh";
-import {identity, Mat4, vec3, Vec3} from "../utils/MVU";
+import {add, identity, Mat4, multiply, rotation, vec3, Vec3} from "../utils/MVU";
 import Mesh from "./Mesh.type";
 import {ok, Result} from "../utils/Resulta";
 
@@ -56,12 +56,15 @@ export interface Context {
 	plane: PlaneInfo;
 
 	wireframe: boolean;
+
+	worldUp: Vec3;
 }
 
 export interface PlaneInfo {
 	scale: Vec3;
 	position: Vec3;
-	rotation: Vec3;
+	up: Vec3;
+	rotation: number;
 	mesh_data: Mesh;
 }
 
@@ -69,7 +72,8 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
     const plane : PlaneInfo= {
         scale: vec3(.8, .8, .8),
         position: vec3(0, 0, 0),
-        rotation: vec3(0, 0, 0),
+		up: vec3(0, 1, 0),
+        rotation: 0,
         mesh_data: generatePlane(PLANE_WIDTH, PLANE_HEIGHT, 100),
     };
 
@@ -92,7 +96,8 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 		normalMatrix: identity(4),
 		plane: plane,
 		wireframe: false,
-		shader: shader
+		shader: shader,
+		worldUp: vec3(0, 0, 1)
 	});
 }
 
@@ -122,22 +127,16 @@ export function setPlanePosition(context: Context, position: Vec3) {
 	context.plane.position = position;
 }
 
-export function setPlaneRotation(context: Context, rotation: Vec3) {
+export function setPlaneRotation(context: Context, rotation: number) {
 	context.plane.rotation = rotation;
 }
 
-export function rotatePlane(context: Context, rotation: Vec3) {
-	context.plane.rotation = [
-		context.plane.rotation[0] + rotation[0],
-		context.plane.rotation[1] + rotation[1],
-		context.plane.rotation[2] + rotation[2]
-	]
+export function rotatePlane(context: Context, radians: number) {
+	context.plane.rotation += radians;
+	context.modelMatrix = multiply(rotation(radians, context.plane.up), context.modelMatrix)
+	context.shader.setModelMatrix(context.modelMatrix);
 }
 
 export function translatePlane(context: Context, translation: Vec3) {
-	context.plane.position = [
-		context.plane.position[0] + translation[0],
-		context.plane.position[1] + translation[1],
-		context.plane.position[2] + translation[2]
-	]
+	context.plane.position = add(translation, context.plane.position);
 }

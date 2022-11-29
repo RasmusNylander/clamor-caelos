@@ -7,9 +7,8 @@ import {
 	lookAt,
 	multiply,
 	perspective,
-	rotationMatrixX,
-	rotationMatrixY,
-	rotationMatrixZ,
+	rotateAxisTo,
+	rotation,
 	scalingMatrix,
 	translation,
 	vec3,
@@ -58,6 +57,7 @@ export async function main(): Promise<void> {
 		const inputSetupResult = handleHTMLInput(context);
 		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
 
+		lastFrameTime = performance.now();
 		requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
 	} catch (error) {
 		return reportFatalError(error as Error);
@@ -131,14 +131,10 @@ function setupMatrices(context: Context): void {
 	let modelMatrix = identity(4);
 	const modelTranslation = translation(context.plane.position);
 	const modelScale = scalingMatrix(context.plane.scale);
-	const rotateX = rotationMatrixX(-90 + context.plane.rotation[0]);
-	const rotateY = rotationMatrixY(context.plane.rotation[1]);
-	const rotateZ = rotationMatrixZ(context.plane.rotation[2]);
 
-	modelMatrix = multiply(modelMatrix, modelTranslation);
-	modelMatrix = multiply(modelMatrix, rotateX);
-	modelMatrix = multiply(modelMatrix, rotateY);
-	modelMatrix = multiply(modelMatrix, rotateZ);
+	modelMatrix = multiply(modelTranslation, modelMatrix);
+	modelMatrix = multiply(rotateAxisTo(context.worldUp, context.plane.up), modelMatrix);
+	modelMatrix = multiply(rotation(context.plane.rotation, context.plane.up), modelMatrix);
 	modelMatrix = multiply(modelMatrix, modelScale);
 
 	context.modelMatrix = modelMatrix;
@@ -197,8 +193,9 @@ function handleHTMLInput(context: Context): Result<void> {
  * @param gl The WebGL context
  * @param context The application context
  * @param loop Whether to render the scene continuously
- * @param time The time in milliseconds since the last frame
+ * @param time
  */
+let lastFrameTime: DOMHighResTimeStamp;
 function drawScene(
 	gl: WebGLRenderingContext,
 	context: Context,
@@ -207,8 +204,10 @@ function drawScene(
 ): void {
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-	rotatePlane(context, vec3(0, 0, 0.1));
-	setupMatrices(context);
+	const deltaTime = time - lastFrameTime;
+	lastFrameTime = time;
+
+	rotatePlane(context, 0.001 * deltaTime);
 
 	context.shader.bindIndexBuffer();
 	gl.drawElements(
@@ -218,5 +217,5 @@ function drawScene(
 		0
 	);
 
-	if (loop) requestAnimationFrame((time) => drawScene(gl, context, loop, time));
+	if (loop) requestAnimationFrame((newTime) => drawScene(gl, context, loop, newTime));
 }
