@@ -35,7 +35,7 @@ export default class PrimaryShader extends Shader {
 		if (names === null || names.length === 0)
 			return error("No attributes were specified");
 
-		const results = names.map(name => this.getAttribLocation(name));
+		const results = names.map(name => this.getAttributeLocation(name));
 		if (results.every(result => result.ok))
 			return ok(results.map(result => (result as Success<GLint>).value));
 
