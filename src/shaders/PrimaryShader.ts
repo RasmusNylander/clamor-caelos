@@ -41,7 +41,7 @@ export default class PrimaryShader extends Shader {
 		const buffersResult = this.createBuffers(4);
 		if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
 		[this.vertexBuffer, this.normalBuffer, this.textureCoordsBuffer, this.indexBuffer] = buffersResult.value;
-		this.setBuffers();
+		this.initBuffers();
 
 		const heightmap = gl.createTexture();
 		if (!heightmap) throw new Error("Cannot create height map texture");
@@ -87,14 +87,14 @@ export default class PrimaryShader extends Shader {
 	// }
 
 	/** Initialize buffers */
-	public setBuffers(): void {
-		this.setPositionBuffer();
-		this.setNormalBuffer();
-		this.setTextureCoordsBuffer();
+	public initBuffers(): void {
+		this.initPositionBuffer();
+		this.initNormalBuffer();
+		this.initTextureCoordsBuffer();
 		this.bindIndexBuffer();
 	}
 
-	public setPositionBuffer(): void {
+	public initPositionBuffer(): void {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
 		this.gl.vertexAttribPointer(
 			this.aPositionLocation,
@@ -107,7 +107,7 @@ export default class PrimaryShader extends Shader {
 		this.gl.enableVertexAttribArray(this.aPositionLocation);
 	}
 
-	public setNormalBuffer(): void {
+	public initNormalBuffer(): void {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.normalBuffer);
 		this.gl.vertexAttribPointer(
 			this.aNormalLocation,
@@ -120,7 +120,7 @@ export default class PrimaryShader extends Shader {
 		this.gl.enableVertexAttribArray(this.aNormalLocation);
 	}
 
-	public setTextureCoordsBuffer(): void {
+	public initTextureCoordsBuffer(): void {
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.textureCoordsBuffer);
 		this.gl.vertexAttribPointer(
 			this.aTextureCoordsLocation,
