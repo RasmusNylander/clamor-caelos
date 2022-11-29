@@ -1,5 +1,5 @@
 import Shader from "../model/Shader";
-import {Result} from "../utils/Resulta";
+import {error, Failure, ok, Result, Success} from "../utils/Resulta";
 
 // Primary shader
 export default class PrimaryShader extends Shader {
@@ -12,25 +12,9 @@ export default class PrimaryShader extends Shader {
 
 		let result: Result<any>;
 
-		result = this.getUniformLocation("uModelViewMatrix");
-		if (!result.ok) throw result.error;
-		this.uModelViewMatrixLocation = result.value;
-
-		result = this.getUniformLocation("uProjectionMatrix");
-		if (!result.ok) throw result.error;
-		this.uProjectionMatrixLocation = result.value;
-
-		// result = this.getUniformLocation("uNormalMatrix");
-		// if (!result.ok) throw result.error;
-		// this.uNormalMatrixLocation = result.value;
-
-		result = this.getUniformLocation("uHeightMap");
-		if (!result.ok) throw result.error;
-		this.uHeightMapLocation = result.value;
-
-		// result = this.getUniformLocation("uTiling");
-		// if (!result.ok) throw result.error;
-		// this.uTilingLocation = result.value;
+		const uniformsResult = this.findUniforms("uModelViewMatrix", "uProjectionMatrix", "uHeightMap");
+		if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
+		[this.uModelViewMatrixLocation, this.uProjectionMatrixLocation, this.uHeightMapLocation] = uniformsResult.value;
 
 
 		result = this.getAttribLocation("aPosition");
@@ -44,6 +28,18 @@ export default class PrimaryShader extends Shader {
 		result = this.getAttribLocation("aTexCoords");
 		if (!result.ok) throw result.error;
 		this.aTextureCoordsLocation = result.value;
+	}
+
+	private findUniforms(...names: string[]): Result<Array<WebGLUniformLocation>> {
+		if (names === null || names.length === 0)
+			return error("No uniforms were specified");
+
+		const results = names.map(name => this.getUniformLocation(name));
+		if (results.every(result => result.ok))
+			return ok(results.map(result => (result as Success<WebGLUniformLocation>).value));
+
+		const errors = results.filter(result => !result.ok).map(result => (result as Failure).error);
+		return error(errors.join("\n\n"));
 	}
 
 	// Uniforms
