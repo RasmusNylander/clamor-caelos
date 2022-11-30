@@ -63,6 +63,7 @@ export function generatePlane(
 		normals: new Float32Array(normals),
 		uvs: new Float32Array(uvs),
 		indices: new Uint16Array(indices),
+		up_direction: vec3(0, 0, 1)
 	};
 }
 
@@ -73,6 +74,7 @@ export const plane = {
 	normals: new Float32Array([0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]),
 	uvs: new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]),
 	indices: new Uint16Array([0, 1, 2, 0, 2, 3]),
+	up_direction: vec3(0, 0, 1)
 };
 
 
@@ -100,4 +102,5 @@ export const cube: Mesh = {
 		0, 1, 2, 1, 3, 2, 2, 3, 4, 3, 5, 4, 4, 5, 0, 5, 1, 0, 1, 5, 3, 5, 4, 3, 3,
 		4, 2, 4, 0, 2,
 	]),
+	up_direction: vec3(0, 1, 0),
 };

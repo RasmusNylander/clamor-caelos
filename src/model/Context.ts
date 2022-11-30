@@ -1,6 +1,6 @@
 import PrimaryShader from "../shaders/PrimaryShader";
 import {generatePlane} from "../utils/Mesh";
-import {add, identity, Mat4, multiply, rotation, vec3, Vec3} from "../utils/MVU";
+import {add, identity, Mat4, multiply, rotateAxisTo, rotation, vec3, Vec3} from "../utils/MVU";
 import Mesh from "./Mesh.type";
 import {ok, Result} from "../utils/Resulta";
 
@@ -92,12 +92,12 @@ export function createContext (gl: WebGLRenderingContext, canvas: HTMLCanvasElem
 		heightMap: null,
 		projectionMatrix: identity(4),
 		viewMatrix: identity(4),
-		modelMatrix: identity(4),
+		modelMatrix: rotateAxisTo(plane.mesh_data.up_direction, plane.up),
 		normalMatrix: identity(4),
 		plane: plane,
 		wireframe: false,
 		shader: shader,
-		worldUp: vec3(0, 0, 1)
+		worldUp: vec3(0, 1, 0)
 	});
 }
 

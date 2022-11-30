@@ -40,6 +40,7 @@ export class Plane {
 			normals: new Float32Array(new Float32Array(normals.flat(1))),
 			uvs: new Float32Array(new Float32Array(uvs.flat(1))),
 			indices: new Uint16Array(new Uint16Array(indices.flat(1))),
+			up_direction: vec3(0, 1, 0)
 		}
 	}
 

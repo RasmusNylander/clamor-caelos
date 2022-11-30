@@ -128,7 +128,7 @@ function setupMatrices(context: Context): void {
 	viewMatrix = multiply(viewMatrix, viewRotation);
 
 	/** Model Matrix of the terrain plane */
-	let modelMatrix = identity(4);
+	let modelMatrix = rotateAxisTo(context.plane.mesh_data.up_direction, context.worldUp);
 	const modelTranslation = translation(context.plane.position);
 	const modelScale = scalingMatrix(context.plane.scale);
 
