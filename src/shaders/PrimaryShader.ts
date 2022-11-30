@@ -24,7 +24,7 @@ export default class PrimaryShader extends Shader {
 	private indexBuffer: WebGLBuffer;
 
 
-	public constructor(gl: WebGLRenderingContext) {
+	public constructor(gl: WebGL2RenderingContext) {
 		super(
 			gl,
 			require("./vertex.glsl"),
@@ -166,6 +166,6 @@ export default class PrimaryShader extends Shader {
 }
 
 enum BufferType {
-	ARRAY_BUFFER = WebGLRenderingContext.ARRAY_BUFFER,
-	ELEMENT_ARRAY_BUFFER = WebGLRenderingContext.ELEMENT_ARRAY_BUFFER,
+	ARRAY_BUFFER = WebGL2RenderingContext.ARRAY_BUFFER,
+	ELEMENT_ARRAY_BUFFER = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER,
 }

@@ -21,7 +21,7 @@ export class Texture {
 	public height: number;
 
 	public static loadTexture(
-		gl: WebGLRenderingContext,
+		gl: WebGL2RenderingContext,
 		imagePath: string
 	): Promise<Texture> {
 		return new Promise((resolve, reject) => {
@@ -32,7 +32,7 @@ export class Texture {
 	}
 
 	public static loadTextureFromImage(
-		gl: WebGLRenderingContext,
+		gl: WebGL2RenderingContext,
 		image: HTMLImageElement
 	): Promise<Texture> {
 		return new Promise((resolve, reject) => {

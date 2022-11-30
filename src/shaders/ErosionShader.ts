@@ -1,7 +1,6 @@
 import Shader from "../model/Shader";
 
 
-
 export class ErosionShader extends Shader {
     // Uniforms
     private uHeightMapLocation: WebGLUniformLocation;
@@ -13,7 +12,7 @@ export class ErosionShader extends Shader {
     // Buffers
     private normalBuffer: WebGLBuffer;
 
-    public constructor(gl: WebGLRenderingContext) {
+    public constructor(gl: WebGL2RenderingContext) {
         super(
             gl,
             require("./erosion_vertex.glsl"),

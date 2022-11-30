@@ -12,7 +12,7 @@ export class Context {
 	/**
 	 * The WebGL context
 	 */
-	gl: WebGLRenderingContext;
+	gl: WebGL2RenderingContext;
 	/**
 	 * The canvas that the WebGL context is attached to
 	 */
@@ -54,7 +54,7 @@ export class Context {
 
 	worldUp: Vec3;
 
-	constructor(gl: WebGLRenderingContext, canvas: HTMLCanvasElement) {
+	constructor(gl: WebGL2RenderingContext, canvas: HTMLCanvasElement) {
 		this.gl = gl;
 		this.canvas = canvas;
 		this.heightMap = null;

@@ -70,11 +70,11 @@ export async function main(): Promise<void> {
  * @param gl The WebGL context
  * @param context The application context
  */
-function refreshPlane(gl: WebGLRenderingContext, context: Context): void{
+function refreshPlane(gl: WebGL2RenderingContext, context: Context): void{
 	context.refreshBuffers();
 }
 
-async function loadHeightmap(gl: WebGLRenderingContext, context: Context): Promise<Result<void>> {
+async function loadHeightmap(gl: WebGL2RenderingContext, context: Context): Promise<Result<void>> {
 	const htmlImageElement = document.getElementById(
 		"heightmap"
 	) as HTMLImageElement;
@@ -197,7 +197,7 @@ function handleHTMLInput(context: Context): Result<void> {
  */
 let lastFrameTime: DOMHighResTimeStamp;
 function drawScene(
-	gl: WebGLRenderingContext,
+	gl: WebGL2RenderingContext,
 	context: Context,
 	loop: boolean,
 	time: number

@@ -19,7 +19,7 @@ function shaderTypeToString(shaderType: ShaderType): string {
 	throw new Error(`Unreachable! Unknown shader type: ${shaderType}`);
 }
 
-export function compileShader(gl: WebGLRenderingContext, shaderType: ShaderType, shaderSource: string): Result<WebGLShader> {
+export function compileShader(gl: WebGL2RenderingContext, shaderType: ShaderType, shaderSource: string): Result<WebGLShader> {
 	const shader: WebGLShader | null = gl.createShader(shaderType === ShaderType.VERTEX_SHADER ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 	if (shader === null) {
 		return error("WebGL returned null shader.");
@@ -35,7 +35,7 @@ export function compileShader(gl: WebGLRenderingContext, shaderType: ShaderType,
 	return ok(shader);
 }
 
-export function loadShader(gl: WebGLRenderingContext, type: ShaderType, shaderId: string): Result<WebGLShader> {
+export function loadShader(gl: WebGL2RenderingContext, type: ShaderType, shaderId: string): Result<WebGLShader> {
 	const shaderScriptElement = document.getElementById(shaderId) as HTMLScriptElement;
 	if (!shaderScriptElement)
 		return error("Could not find shader script element with id: " + shaderId);
@@ -46,7 +46,7 @@ export function loadShader(gl: WebGLRenderingContext, type: ShaderType, shaderId
 	return shader;
 }
 
-export async function loadShaderFromFile(gl: WebGLRenderingContext, type: ShaderType, filename: string): Promise<Result<WebGLShader>> {
+export async function loadShaderFromFile(gl: WebGL2RenderingContext, type: ShaderType, filename: string): Promise<Result<WebGLShader>> {
 	try {
 		const response: Response = await fetch(filename);
 		const source = await response.text();
@@ -56,11 +56,11 @@ export async function loadShaderFromFile(gl: WebGLRenderingContext, type: Shader
 	}
 }
 
-export function loadShaderFromString(gl: WebGLRenderingContext, type: ShaderType, source: string): Result<WebGLShader> {
+export function loadShaderFromString(gl: WebGL2RenderingContext, type: ShaderType, source: string): Result<WebGLShader> {
 	return compileShader(gl, type, source);
 }
 
-export function compileProgram(gl: WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): Result<WebGLProgram> {
+export function compileProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): Result<WebGLProgram> {
 	const program = gl.createProgram();
 	if (program === null) {
 		return error("WebGL returned null program.");
@@ -78,7 +78,7 @@ export function compileProgram(gl: WebGLRenderingContext, vertexShader: WebGLSha
 	return ok(program);
 }
 
-export async function initShadersFromFile(gl: WebGLRenderingContext, vertexShaderFilename: string, fragmentShaderFilename: string): Promise<Result<WebGLProgram>> {
+export async function initShadersFromFile(gl: WebGL2RenderingContext, vertexShaderFilename: string, fragmentShaderFilename: string): Promise<Result<WebGLProgram>> {
 	const [vertexShader, fragmentShader] = await Promise.all([
 		loadShaderFromFile(gl, ShaderType.VERTEX_SHADER, vertexShaderFilename),
 		loadShaderFromFile(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderFilename),
@@ -98,7 +98,7 @@ export async function initShadersFromFile(gl: WebGLRenderingContext, vertexShade
 	return error(`Failed to load fragment shader '${fragmentShaderFilename}'`, (<Failure>fragmentShader).error);
 }
 
-export function initShadersFromString(gl: WebGLRenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Result<WebGLProgram> {
+export function initShadersFromString(gl: WebGL2RenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Result<WebGLProgram> {
 	const vertexShader = compileShader(gl, ShaderType.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = compileShader(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderSource);
 
@@ -116,7 +116,7 @@ export function initShadersFromString(gl: WebGLRenderingContext, vertexShaderSou
 	return error(`Failed to load fragment shader with source: '${fragmentShaderSource}'`, (<Failure>fragmentShader).error);
 }
 
-export function initShaders(gl: WebGLRenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
+export function initShaders(gl: WebGL2RenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
 	const program: WebGLProgram | null = gl.createProgram();
 	if (program === null)
 		return error("WebGL returned null program.");

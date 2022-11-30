@@ -6,11 +6,11 @@ import {error, Failure, ok, Result, Success} from "../utils/Resulta";
  * Having it as a class allows us to easier manage the shader program and its attributes and uniforms.
  */
 export default class Shader {
-	protected readonly gl: WebGLRenderingContext;
+	protected readonly gl: WebGL2RenderingContext;
 	protected readonly program: WebGLProgram;
 
 	constructor(
-		gl: WebGLRenderingContext,
+		gl: WebGL2RenderingContext,
 		vertexShader: string,
 		fragmentShader: string
 	) {
