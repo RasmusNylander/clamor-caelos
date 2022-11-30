@@ -74,7 +74,6 @@ export async function main(): Promise<void> {
 function refreshPlane(gl: WebGLRenderingContext, context: Context): Result<void> {
 	const result = refreshBuffers(context);
 	if (!result.ok) return error("Could not refresh buffers", result.error);
-	setupMatrices(context);
 	return ok();
 }
 
