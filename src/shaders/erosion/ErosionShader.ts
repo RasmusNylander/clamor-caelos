@@ -1,4 +1,4 @@
-import Shader from "../model/Shader";
+import Shader from "../../model/Shader";
 
 
 export class ErosionShader extends Shader {
