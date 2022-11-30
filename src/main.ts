@@ -14,6 +14,7 @@ import {
 	vec3,
 } from "./utils/MVU";
 import {error, ok, Result} from "./utils/Resulta";
+import {SubdivisionNumber} from "./model/SubdivisionNumber";
 
 const SHOULD_LOOP = true;
 
@@ -158,10 +159,15 @@ function handleHTMLInput(context: Context): Result<void> {
 	) as HTMLInputElement;
 	if (subdivisionsSlider === null) return error("Could not find subdivisions slider");
 	subdivisionsSlider.oninput = function (event) {
-		const subdivisions = parseInt(subdivisionsSlider.value);
-		context.setPlaneSubdivision(subdivisions);
+		const subdivisions = SubdivisionNumber.fromString(subdivisionsSlider.value);
+		if (!subdivisions.ok) {
+			const error = new Error("Could not parse subdivisions", {cause: subdivisions.error});
+			reportFatalError(error);
+			return;
+		}
+		context.setPlaneSubdivision(subdivisions.value);
 		refreshPlane(context.gl, context);
-		console.debug("Subdivisions changed to:", subdivisions);
+		console.debug("Subdivisions changed to:", subdivisions.value);
 	};
 
 	// wireframe toggle button
