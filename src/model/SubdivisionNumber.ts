@@ -12,4 +12,9 @@ export class SubdivisionNumber extends Number {
 		return ok(new SubdivisionNumber(number));
 	}
 
+	static fromString(string: string): Result<SubdivisionNumber> {
+		const number = parseInt(string);
+		return SubdivisionNumber.fromNumber(number);
+	}
+
 }
