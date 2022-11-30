@@ -52,7 +52,7 @@ export async function main(): Promise<void> {
 
 		const possibleError = await loadHeightmap(gl, context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);
-		setupMatrices(context);
+		initMatrices(context);
 		const inputSetupResult = handleHTMLInput(context);
 		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
 
@@ -101,7 +101,7 @@ async function fetchHeightmap(url: URL): Promise<Result<ImageBitmap>> {
  * @todo Later the matrices will be recalculated automatically in both the Camera class and a Mesh class, but for now we do it manually.
  * @param context The context to setup the matrices for
  */
-function setupMatrices(context: Context): void {
+function initMatrices(context: Context): void {
 	/**
 	 *  We start with calculating the projection matrix.
 	 */
