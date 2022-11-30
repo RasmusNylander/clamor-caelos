@@ -1,5 +1,5 @@
 import {setupWebGL} from "./utils/WebGLUtils";
-import {Context, createContext, refreshBuffers, rotatePlane, setPlaneSubdivision,} from "./model/Context";
+import {Context} from "./model/Context";
 import heightMapPath from "./assets/images/terrain_1024.png";
 import {
 	identity,
@@ -47,9 +47,7 @@ export async function main(): Promise<void> {
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 
-		const contextResult = createContext(gl, canvas);
-		if (!contextResult.ok) return reportFatalError(new Error("Could not create context", {cause: contextResult.error}));
-		const context = contextResult.value;
+		const context = new Context(gl, canvas);
 
 		const possibleError = await loadHeightmap(gl, context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);
@@ -71,10 +69,8 @@ export async function main(): Promise<void> {
  * @param gl The WebGL context
  * @param context The application context
  */
-function refreshPlane(gl: WebGLRenderingContext, context: Context): Result<void> {
-	const result = refreshBuffers(context);
-	if (!result.ok) return error("Could not refresh buffers", result.error);
-	return ok();
+function refreshPlane(gl: WebGLRenderingContext, context: Context): void{
+	context.refreshBuffers();
 }
 
 async function loadHeightmap(gl: WebGLRenderingContext, context: Context): Promise<Result<void>> {
@@ -163,9 +159,8 @@ function handleHTMLInput(context: Context): Result<void> {
 	if (subdivisionsSlider === null) return error("Could not find subdivisions slider");
 	subdivisionsSlider.oninput = function (event) {
 		const subdivisions = parseInt(subdivisionsSlider.value);
-		setPlaneSubdivision(context, subdivisions);
-		const result = refreshPlane(context.gl, context);
-		if (!result.ok) return reportFatalError(result.error);
+		context.setPlaneSubdivision(subdivisions);
+		refreshPlane(context.gl, context);
 		console.debug("Subdivisions changed to:", subdivisions);
 	};
 
@@ -206,7 +201,7 @@ function drawScene(
 	const deltaTime = time - lastFrameTime;
 	lastFrameTime = time;
 
-	rotatePlane(context, 0.001 * deltaTime);
+	context.rotatePlane(0.001 * deltaTime);
 
 	context.shader.bindIndexBuffer();
 	gl.drawElements(
