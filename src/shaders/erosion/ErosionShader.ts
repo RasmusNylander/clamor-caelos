@@ -63,6 +63,7 @@ export class ErosionShader extends Shader {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.uniform1i(this.uHeightWaterSolutesMap, 0);
     }
 
     public initialiseDataOnGPU(heightmap: Heightmap): Result<void> {
@@ -76,11 +77,10 @@ export class ErosionShader extends Shader {
             heightWaterSolutesMap[i * 3 + 1] = 0;
             heightWaterSolutesMap[i * 3 + 2] = 0;
         }
-
+    
         const gl = this.gl;
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, 256, 256, 0, gl.RGB, gl.FLOAT, new Float32Array(heightWaterSolutesMap));
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, heightmap.width, heightmap.height, 0, gl.RGB, gl.FLOAT, new Float32Array(heightWaterSolutesMap));
 
-        gl.uniform1i(this.uHeightWaterSolutesMap, 0);
         return ok();
     }
 }
