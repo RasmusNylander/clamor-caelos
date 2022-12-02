@@ -47,6 +47,7 @@ export default class PrimaryShader extends Shader {
 		const heightmap = gl.createTexture();
 		if (!heightmap) throw new Error("Cannot create height map texture");
 		this.heightmap = heightmap;
+		this.initTextures();
 	}
 
 	public setModelMatrix(matrix: Mat4): void {
@@ -69,11 +70,7 @@ export default class PrimaryShader extends Shader {
 	): void {
 		const gl = this.gl;
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1); // Flip the image's y axis
-		gl.activeTexture(gl.TEXTURE0);
 		gl.bindTexture(gl.TEXTURE_2D, this.heightmap);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.texImage2D(
 			gl.TEXTURE_2D,
 			0,
@@ -82,13 +79,17 @@ export default class PrimaryShader extends Shader {
 			gl.UNSIGNED_BYTE,
 			texImageSource
 		);
-
-		this.setUniform1i(this.uHeightMapLocation, 0);
 	}
 
-	// public setTiling(tiling: number): void {
-	// 	this.setUniform1f(this.uTilingLocation, tiling);
-	// }
+	private initTextures() {
+		const gl = this.gl;
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, this.heightmap);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		this.setUniform1i(this.uHeightMapLocation, 0);
+	}
 
 	/** Initialize buffers */
 	public initBuffers(): void {
