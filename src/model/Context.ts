@@ -73,6 +73,9 @@ export class Context {
 		this.refreshBuffers();
 	}
 
+	setHeightMap(heightMap: ImageBitmap) {
+		this.shader.setHeightMap(heightMap);
+	}
 
 	refreshBuffers(): void {
 		const shader = this.shader;

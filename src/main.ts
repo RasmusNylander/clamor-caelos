@@ -84,7 +84,7 @@ async function loadHeightmap(gl: WebGL2RenderingContext, context: Context): Prom
 
 	const heightMap = await fetchHeightmap(heightMapPath);
 	if (!heightMap.ok) return error("Could not fetch heightmap", heightMap.error);
-	context.shader.setHeightMap(heightMap.value);
+	context.setHeightMap(heightMap.value);
 	return ok();
 }
 
