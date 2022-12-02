@@ -1,4 +1,5 @@
 import Shader from "../../model/Shader";
+import {error, ok, Result} from "../../utils/Resulta";
 
 export interface Heightmap {
     width: number;
@@ -35,6 +36,7 @@ export class ErosionShader extends Shader {
         this.heightWaterSolutesMap = heightWaterSolutesMap;
 
         this.initTexture();
+        this.initialiseDataOnGPU(heightmap);
     }
 
     protected initDummyBuffer(lengthOfDummyData: number): void {
@@ -50,5 +52,24 @@ export class ErosionShader extends Shader {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+
+    public initialiseDataOnGPU(heightmap: Heightmap): Result<void> {
+        if (heightmap.width * heightmap.height !== heightmap.data.length)
+            return error("Illegal heightmap!", new Error(`Heightmap data length does not match width and height. height * width = ${heightmap.width * heightmap.height}, data length = ${heightmap.data.length}`));
+
+
+        const heightWaterSolutesMap = new Float32Array(heightmap.width * heightmap.height * 3);
+        for (let i = 0; i < heightmap.width * heightmap.height; i++) {
+            heightWaterSolutesMap[i * 3] = heightmap.data[i];
+            heightWaterSolutesMap[i * 3 + 1] = 0;
+            heightWaterSolutesMap[i * 3 + 2] = 0;
+        }
+
+        const gl = this.gl;
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, 256, 256, 0, gl.RGB, gl.FLOAT, new Float32Array(heightWaterSolutesMap));
+
+        gl.uniform1i(this.uHeightWaterSolutesMap, 0);
+        return ok();
     }
 }
