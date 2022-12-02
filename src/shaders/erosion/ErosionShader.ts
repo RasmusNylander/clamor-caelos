@@ -8,14 +8,11 @@ export interface Heightmap {
 
 export class ErosionShader extends Shader {
     // Uniforms
-    private uHeightMapLocation: WebGLUniformLocation;
-    private heightmap: WebGLTexture;
-
-    // Attributes
-    private aNormalLocation: number;
+    private uHeightWaterSolutesMap: WebGLUniformLocation;
+    private heightWaterSolutesMap: WebGLTexture;
 
     // Buffers
-    private normalBuffer: WebGLBuffer;
+    private dummyBuffer: WebGLBuffer;
 
     public constructor(gl: WebGL2RenderingContext, heightmap: Heightmap) {
         super(
@@ -33,22 +30,15 @@ export class ErosionShader extends Shader {
         [this.dummyBuffer] = buffersResult.value;
         this.initDummyBuffer(heightmap.width * heightmap.height);
 
-        const heightmap = gl.createTexture();
-        if (!heightmap) throw new Error("Cannot create height map texture");
-        this.heightmap = heightmap;
+        const heightWaterSolutesMap = gl.createTexture();
+        if (!heightWaterSolutesMap) throw new Error("Cannot create height map texture");
+        this.heightWaterSolutesMap = heightWaterSolutesMap;
+
     }
 
-    initBuffers(): void {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.normalBuffer);
-        
+    protected initDummyBuffer(lengthOfDummyData: number): void {
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dummyBuffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(lengthOfDummyData), this.gl.STATIC_DRAW);
     }
-
-    public setHeightMap(heightmap: WebGLTexture): void {
-        this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, heightmap);
-        this.gl.uniform1i(this.uHeightMapLocation, 0);
-    }
-
-    
 
 }
