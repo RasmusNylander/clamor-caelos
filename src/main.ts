@@ -65,16 +65,6 @@ export async function main(): Promise<void> {
 	return;
 }
 
-/**
- * Refresh the plane buffers and recalculate the matrices.
- * @todo Later the matrices will be recalculated automatically in both the Camera class and a Mesh class, but for now we do it manually.
- * @param gl The WebGL context
- * @param context The application context
- */
-function refreshPlane(context: Context): void{
-	context.refreshBuffers();
-}
-
 async function loadHeightmap(context: Context): Promise<Result<void>> {
 	const htmlImageElement = document.getElementById(
 		"heightmap"
@@ -167,7 +157,6 @@ function handleHTMLInput(context: Context): Result<void> {
 			return;
 		}
 		context.setPlaneSubdivision(subdivisions.value);
-		refreshPlane(context);
 		console.debug("Subdivisions changed to:", subdivisions.value);
 	};
 

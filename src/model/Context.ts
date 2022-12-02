@@ -94,6 +94,7 @@ export class Context {
 			PLANE_HEIGHT,
 			subdivision as number
 		);
+		this.refreshBuffers();
 	}
 
 	setPlaneScale(scale: Vec3) {
