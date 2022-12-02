@@ -32,16 +32,19 @@ export class ErosionShader extends Shader {
     private heightWaterSolutesMap: WebGLTexture;
 
     public constructor(heightmap: Heightmap, gl?: WebGL2RenderingContext) {
+        let autoUse = false;
         if (!gl) {
             gl = new OffscreenCanvas(heightmap.width, heightmap.height).getContext('webgl2') as WebGL2RenderingContext;
             if (gl === null)
                 throw new Error('Unable to create offscreen canvas context, and no WebGL2RenderingContext was provided.');
+            autoUse = true;
         }
         super(
             gl,
             require("./erosion_vertex_shader.glsl"),
             require("./erosion_fragment_shader.glsl")
         );
+        if (autoUse) this.use();
 
         const uniformsResult = this.findUniforms("u_heightmap_watermap_solutesmap");
         if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
@@ -77,7 +80,7 @@ export class ErosionShader extends Shader {
             heightWaterSolutesMap[i * 3 + 1] = 0;
             heightWaterSolutesMap[i * 3 + 2] = 0;
         }
-    
+
         const gl = this.gl;
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB32F, heightmap.width, heightmap.height, 0, gl.RGB, gl.FLOAT, new Float32Array(heightWaterSolutesMap));
 
