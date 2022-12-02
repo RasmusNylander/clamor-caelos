@@ -49,7 +49,7 @@ export async function main(): Promise<void> {
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 
-		const context = new Context(new PrimaryShader(gl), gl, canvas);
+		const context = new Context(new PrimaryShader(gl), canvas);
 
 		const possibleError = await loadHeightmap(gl, context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);

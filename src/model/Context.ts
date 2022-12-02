@@ -10,10 +10,6 @@ const PLANE_HEIGHT = 50;
 // The interface for the application state context
 export class Context {
 	/**
-	 * The WebGL context
-	 */
-	gl: WebGL2RenderingContext;
-	/**
 	 * The canvas that the WebGL context is attached to
 	 */
 	canvas: HTMLCanvasElement;
@@ -54,8 +50,7 @@ export class Context {
 
 	worldUp: Vec3;
 
-	constructor(terrainRenderShader: PrimaryShader, gl: WebGL2RenderingContext, canvas: HTMLCanvasElement) {
-		this.gl = gl;
+	constructor(terrainRenderShader: PrimaryShader, canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		this.heightMap = null;
 		this.shader = terrainRenderShader;
