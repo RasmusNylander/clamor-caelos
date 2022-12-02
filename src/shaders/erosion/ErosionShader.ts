@@ -7,6 +7,25 @@ export interface Heightmap {
     data: Array<number> | Float32Array;
 }
 
+export function heightmapFromImageBitmap(imageBitmap: ImageBitmap) {
+    const canvas = document.createElement("canvas");
+    canvas.width = imageBitmap.width;
+    canvas.height = imageBitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return error("Could not get 2d context from canvas");
+    ctx.drawImage(imageBitmap, 0, 0);
+    const imageData = ctx.getImageData(0, 0, imageBitmap.width, imageBitmap.height);
+    const data = new Float32Array(imageData.data.length / 4);
+    for (let i = 0; i < data.length; i++) {
+        data[i] = imageData.data[i * 4] / 255;
+    }
+    return ok({
+        width: imageBitmap.width,
+        height: imageBitmap.height,
+        data,
+    });
+}
+
 export class ErosionShader extends Shader {
     // Uniforms
     private uHeightWaterSolutesMap: WebGLUniformLocation;
