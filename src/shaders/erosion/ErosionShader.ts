@@ -34,6 +34,7 @@ export class ErosionShader extends Shader {
         if (!heightWaterSolutesMap) throw new Error("Cannot create height map texture");
         this.heightWaterSolutesMap = heightWaterSolutesMap;
 
+        this.initTexture();
     }
 
     protected initDummyBuffer(lengthOfDummyData: number): void {
@@ -41,4 +42,13 @@ export class ErosionShader extends Shader {
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(lengthOfDummyData), this.gl.STATIC_DRAW);
     }
 
+    private initTexture(): void {
+        const gl = this.gl;
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, this.heightWaterSolutesMap);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
 }
