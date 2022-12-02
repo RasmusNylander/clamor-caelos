@@ -15,7 +15,13 @@ export class ErosionShader extends Shader {
     // Buffers
     private dummyBuffer: WebGLBuffer;
 
-    public constructor(gl: WebGL2RenderingContext, heightmap: Heightmap) {
+    public constructor(heightmap: Heightmap, gl?: WebGL2RenderingContext) {
+        if (!gl) {
+            gl = new OffscreenCanvas(heightmap.width, heightmap.height).getContext('webgl2') as WebGL2RenderingContext;
+            if (gl === null)
+                throw new Error('Unable to create offscreen canvas context, and no WebGL2RenderingContext was provided.');
+        }
+
         super(
             gl,
             require("./erosion_vertex_shader.glsl"),
