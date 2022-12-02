@@ -55,7 +55,7 @@ export async function main(): Promise<void> {
 		if (!possibleError.ok) return reportFatalError(possibleError.error);
 		initMatrices(context);
 		const inputSetupResult = handleHTMLInput(context);
-		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}));
+		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}))
 
 		lastFrameTime = performance.now();
 		requestAnimationFrame((time) => drawScene(gl, context, SHOULD_LOOP, time));
