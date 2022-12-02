@@ -70,7 +70,7 @@ export async function main(): Promise<void> {
  * @param gl The WebGL context
  * @param context The application context
  */
-function refreshPlane(gl: WebGL2RenderingContext, context: Context): void{
+function refreshPlane(context: Context): void{
 	context.refreshBuffers();
 }
 
@@ -166,7 +166,7 @@ function handleHTMLInput(context: Context): Result<void> {
 			return;
 		}
 		context.setPlaneSubdivision(subdivisions.value);
-		refreshPlane(context.gl, context);
+		refreshPlane(context);
 		console.debug("Subdivisions changed to:", subdivisions.value);
 	};
 
