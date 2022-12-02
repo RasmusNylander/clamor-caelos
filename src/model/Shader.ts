@@ -75,6 +75,13 @@ export default class Shader {
 		this.gl.uniform1i(location, value);
 	}
 
+	protected setUniform2iv(
+		location: WebGLUniformLocation,
+		value: Int32Array
+	): void {
+		this.gl.uniform2iv(location, value);
+	}
+
 	public setUniform3fv(
 		location: WebGLUniformLocation,
 		value: Float32Array
