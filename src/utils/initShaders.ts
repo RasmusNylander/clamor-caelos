@@ -112,8 +112,8 @@ export function initShadersFromString(gl: WebGL2RenderingContext, vertexShaderSo
 		return error(`Failed to compile both vertex and fragment shaders.\nVertex shader error: ${vertexShader["error"].message}\nFragment shader error: ${fragmentShader["error"].message}`);
 
 	if (!vertexShader.ok)
-		return error(`Failed to load vertex shader with source: '${vertexShaderSource}'`, (<Failure>vertexShader).error);
-	return error(`Failed to load fragment shader with source: '${fragmentShaderSource}'`, (<Failure>fragmentShader).error);
+		return error(`Failed to load vertex shader`, (<Failure>vertexShader).error);
+	return error(`Failed to load fragment shader`, (<Failure>fragmentShader).error);
 }
 
 export function initShaders(gl: WebGL2RenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
