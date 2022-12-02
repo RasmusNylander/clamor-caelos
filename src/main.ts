@@ -103,34 +103,26 @@ function initMatrices(context: Context): void {
 		150
 	);
 
-	/**
-	 *  Camera View Matrix
-	 */
-
-	let viewMatrix = identity(4);
-	const eye = vec3(50, 30, 20);
-	const at = vec3(0, -10, 0);
-	const up = vec3(0, 1, 0);
-	const viewRotation = lookAt(eye, at, up);
-	viewMatrix = multiply(viewMatrix, viewRotation);
-
 	/** Model Matrix of the terrain plane */
 	let modelMatrix = rotateAxisTo(context.plane.mesh_data.up_direction, context.worldUp);
-	const modelTranslation = translation(context.plane.position);
-	const modelScale = scalingMatrix(context.plane.scale);
-
-	modelMatrix = multiply(modelTranslation, modelMatrix);
+	modelMatrix = multiply(translation(context.plane.position), modelMatrix);
 	modelMatrix = multiply(rotateAxisTo(context.worldUp, context.plane.up), modelMatrix);
 	modelMatrix = multiply(rotation(context.plane.rotation, context.plane.up), modelMatrix);
-	modelMatrix = multiply(modelMatrix, modelScale);
-
+	modelMatrix = multiply(scalingMatrix(context.plane.scale), modelMatrix);
 	context.modelMatrix = modelMatrix;
-	context.viewMatrix = viewMatrix;
 
 	/** Normal matrix of the view * model */
 	context.normalMatrix = identity(4);
 	const normMat = inverse(context.modelMatrix);
 	if (normMat.ok) context.normalMatrix = normMat.value;
+
+	/**
+	 *  Camera View Matrix
+	 */
+	const camera_position = vec3(50, 30, 20);
+	const camera_up_direction = vec3(0, 1, 0);
+	const point_looked_at = vec3(0, -10, 0);
+	context.viewMatrix = lookAt(camera_position, point_looked_at, camera_up_direction);
 
 	// set matrices in shader
 	context.shader.setModelMatrix(context.modelMatrix);
