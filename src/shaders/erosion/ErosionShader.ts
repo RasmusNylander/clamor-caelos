@@ -15,8 +15,8 @@ export class ErosionShader extends Shader {
     public constructor(gl: WebGL2RenderingContext) {
         super(
             gl,
-            require("./erosion_vertex.glsl"),
-            require("./erosion_fragment.glsl")
+            require("./erosion_vertex_shader.glsl"),
+            require("./erosion_fragment_shader.glsl")
         );
 
         const uniformsResult = this.findUniforms("uHeightMap");
