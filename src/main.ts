@@ -16,6 +16,7 @@ import {
 import {error, ok, Result} from "./utils/Resulta";
 import {SubdivisionNumber} from "./model/SubdivisionNumber";
 import PrimaryShader from "./shaders/PrimaryShader";
+import {ErosionShader, heightmapFromImageBitmap} from "./shaders/erosion/ErosionShader";
 
 const SHOULD_LOOP = true;
 
@@ -37,6 +38,7 @@ function reportFatalError(error: Error): void {
  */
 export async function main(): Promise<void> {
 	try {
+		const heightmapPromise = fetchHeightmap(heightMapPath);
 		const result = setHeightmapImageElementSource();
 		if (!result.ok) return reportFatalError(new Error("Could not set heightmap image source", {cause: result.error}));
 
@@ -52,10 +54,17 @@ export async function main(): Promise<void> {
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 
-		const context = new Context(new PrimaryShader(gl), canvas);
+		const heightmapImage = await heightmapPromise;
+		if (!heightmapImage.ok) return reportFatalError(new Error("Could not fetch heightmap", {cause: heightmapImage.error}));
+		const primaryShader = new PrimaryShader(gl);
+		primaryShader.setHeightMap(heightmapImage.value);
 
-		const possibleError = await loadHeightmap(context);
-		if (!possibleError.ok) return reportFatalError(possibleError.error);
+		const heightmap = heightmapFromImageBitmap(heightmapImage.value);
+		if (!heightmap.ok) return reportFatalError(new Error("Heightmap image is not legal heightmap", {cause: heightmap.error}));
+		const erosionShader = new ErosionShader(heightmap.value);
+
+		const context = new Context(primaryShader, erosionShader, canvas);
+
 		initMatrices(context);
 		const inputSetupResult = handleHTMLInput(context);
 		if (!inputSetupResult.ok) return reportFatalError(new Error("Could not setup HTML input", {cause: inputSetupResult.error}))
@@ -75,13 +84,6 @@ function setHeightmapImageElementSource(): Result<void> {
 	) as HTMLImageElement;
 	if (htmlImageElement === null) return error("Could not find heightmap image element");
 	htmlImageElement.src = heightMapPath;
-	return ok();
-}
-
-async function loadHeightmap(context: Context): Promise<Result<void>> {
-	const heightMap = await fetchHeightmap(heightMapPath);
-	if (!heightMap.ok) return error("Could not fetch heightmap", heightMap.error);
-	context.setHeightMap(heightMap.value);
 	return ok();
 }
 
