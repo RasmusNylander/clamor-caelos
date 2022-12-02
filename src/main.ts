@@ -37,6 +37,9 @@ function reportFatalError(error: Error): void {
  */
 export async function main(): Promise<void> {
 	try {
+		const result = setHeightmapImageElementSource();
+		if (!result.ok) return reportFatalError(new Error("Could not set heightmap image source", {cause: result.error}));
+
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 		if (!canvas) return reportFatalError(new Error("Could not find canvas element"));
 		const glResult = setupWebGL(canvas, {premultipliedAlpha: false});
@@ -65,13 +68,17 @@ export async function main(): Promise<void> {
 	return;
 }
 
-async function loadHeightmap(context: Context): Promise<Result<void>> {
+// Todo: This should be replaced by a canvas, such that the modified heightmap can be displayed.
+function setHeightmapImageElementSource(): Result<void> {
 	const htmlImageElement = document.getElementById(
 		"heightmap"
 	) as HTMLImageElement;
 	if (htmlImageElement === null) return error("Could not find heightmap image element");
 	htmlImageElement.src = heightMapPath;
+	return ok();
+}
 
+async function loadHeightmap(context: Context): Promise<Result<void>> {
 	const heightMap = await fetchHeightmap(heightMapPath);
 	if (!heightMap.ok) return error("Could not fetch heightmap", heightMap.error);
 	context.setHeightMap(heightMap.value);
