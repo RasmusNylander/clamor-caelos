@@ -31,16 +31,12 @@ export class ErosionShader extends Shader {
     private uHeightWaterSolutesMap: WebGLUniformLocation;
     private heightWaterSolutesMap: WebGLTexture;
 
-    // Buffers
-    private dummyBuffer: WebGLBuffer;
-
     public constructor(heightmap: Heightmap, gl?: WebGL2RenderingContext) {
         if (!gl) {
             gl = new OffscreenCanvas(heightmap.width, heightmap.height).getContext('webgl2') as WebGL2RenderingContext;
             if (gl === null)
                 throw new Error('Unable to create offscreen canvas context, and no WebGL2RenderingContext was provided.');
         }
-
         super(
             gl,
             require("./erosion_vertex_shader.glsl"),
@@ -51,22 +47,12 @@ export class ErosionShader extends Shader {
         if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
         [this.uHeightWaterSolutesMap] = uniformsResult.value;
 
-        const buffersResult = this.createBuffers(1);
-        if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
-        [this.dummyBuffer] = buffersResult.value;
-        this.initDummyBuffer(heightmap.width * heightmap.height);
-
         const heightWaterSolutesMap = gl.createTexture();
         if (!heightWaterSolutesMap) throw new Error("Cannot create height map texture");
         this.heightWaterSolutesMap = heightWaterSolutesMap;
 
         this.initTexture();
         this.initialiseDataOnGPU(heightmap);
-    }
-
-    protected initDummyBuffer(lengthOfDummyData: number): void {
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dummyBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(lengthOfDummyData), this.gl.STATIC_DRAW);
     }
 
     private initTexture(): void {
