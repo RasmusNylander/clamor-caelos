@@ -51,7 +51,7 @@ export async function main(): Promise<void> {
 
 		const context = new Context(new PrimaryShader(gl), canvas);
 
-		const possibleError = await loadHeightmap(gl, context);
+		const possibleError = await loadHeightmap(context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);
 		initMatrices(context);
 		const inputSetupResult = handleHTMLInput(context);
@@ -75,7 +75,7 @@ function refreshPlane(context: Context): void{
 	context.refreshBuffers();
 }
 
-async function loadHeightmap(gl: WebGL2RenderingContext, context: Context): Promise<Result<void>> {
+async function loadHeightmap(context: Context): Promise<Result<void>> {
 	const htmlImageElement = document.getElementById(
 		"heightmap"
 	) as HTMLImageElement;
