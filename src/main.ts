@@ -15,6 +15,7 @@ import {
 } from "./utils/MVU";
 import {error, ok, Result} from "./utils/Resulta";
 import {SubdivisionNumber} from "./model/SubdivisionNumber";
+import PrimaryShader from "./shaders/PrimaryShader";
 
 const SHOULD_LOOP = true;
 
@@ -48,7 +49,7 @@ export async function main(): Promise<void> {
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 
-		const context = new Context(gl, canvas);
+		const context = new Context(new PrimaryShader(gl), gl, canvas);
 
 		const possibleError = await loadHeightmap(gl, context);
 		if (!possibleError.ok) return reportFatalError(possibleError.error);

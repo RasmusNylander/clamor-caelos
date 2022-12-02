@@ -54,11 +54,11 @@ export class Context {
 
 	worldUp: Vec3;
 
-	constructor(gl: WebGL2RenderingContext, canvas: HTMLCanvasElement) {
+	constructor(terrainRenderShader: PrimaryShader, gl: WebGL2RenderingContext, canvas: HTMLCanvasElement) {
 		this.gl = gl;
 		this.canvas = canvas;
 		this.heightMap = null;
-		this.shader = new PrimaryShader(gl);
+		this.shader = terrainRenderShader;
 		this.projectionMatrix = identity(4);
 		this.viewMatrix = identity(4);
 		this.modelMatrix = identity(4);
