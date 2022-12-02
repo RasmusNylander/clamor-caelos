@@ -1,5 +1,10 @@
 import Shader from "../../model/Shader";
 
+export interface Heightmap {
+    width: number;
+    height: number;
+    data: Array<number> | Float32Array;
+}
 
 export class ErosionShader extends Shader {
     // Uniforms
@@ -12,25 +17,21 @@ export class ErosionShader extends Shader {
     // Buffers
     private normalBuffer: WebGLBuffer;
 
-    public constructor(gl: WebGL2RenderingContext) {
+    public constructor(gl: WebGL2RenderingContext, heightmap: Heightmap) {
         super(
             gl,
             require("./erosion_vertex_shader.glsl"),
             require("./erosion_fragment_shader.glsl")
         );
 
-        const uniformsResult = this.findUniforms("uHeightMap");
+        const uniformsResult = this.findUniforms("u_heightmap_watermap_solutesmap");
         if (!uniformsResult.ok) throw new Error("Cannot find uniforms", {cause: uniformsResult.error});
-        [this.uHeightMapLocation] = uniformsResult.value;
-
-        const attributesResult = this.findAttributes("aNormal");
-        if (!attributesResult.ok) throw new Error("Cannot find attributes", {cause: attributesResult.error});
-        [this.aNormalLocation] = attributesResult.value;
+        [this.uHeightWaterSolutesMap] = uniformsResult.value;
 
         const buffersResult = this.createBuffers(1);
         if (!buffersResult.ok) throw new Error("Cannot create buffers", {cause: buffersResult.error});
-        [this.normalBuffer] = buffersResult.value;
-        this.initBuffers();
+        [this.dummyBuffer] = buffersResult.value;
+        this.initDummyBuffer(heightmap.width * heightmap.height);
 
         const heightmap = gl.createTexture();
         if (!heightmap) throw new Error("Cannot create height map texture");
