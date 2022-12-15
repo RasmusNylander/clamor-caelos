@@ -60,7 +60,7 @@ export function loadShaderFromString(gl: WebGL2RenderingContext, type: ShaderTyp
 	return compileShader(gl, type, source);
 }
 
-export function compileProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader): Result<WebGLProgram> {
+export function compileProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader, transformFeedbackVaryings: Array<string>): Result<WebGLProgram> {
 	const program = gl.createProgram();
 	if (program === null) {
 		return error("WebGL returned null program.");
@@ -68,24 +68,29 @@ export function compileProgram(gl: WebGL2RenderingContext, vertexShader: WebGLSh
 
 	gl.attachShader(program, vertexShader);
 	gl.attachShader(program, fragmentShader);
+	if (transformFeedbackVaryings.length > 0) {
+		gl.transformFeedbackVaryings(program, transformFeedbackVaryings, gl.SEPARATE_ATTRIBS);
+	}
 	gl.linkProgram(program);
 
 	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 		const info = gl.getProgramInfoLog(program);
 		gl.deleteProgram(program);
+		gl.deleteShader(vertexShader);
+		gl.deleteShader(fragmentShader);
 		return error(`Failed to link shader program: ${info}`);
 	}
 	return ok(program);
 }
 
-export async function initShadersFromFile(gl: WebGL2RenderingContext, vertexShaderFilename: string, fragmentShaderFilename: string): Promise<Result<WebGLProgram>> {
+export async function initShadersFromFile(gl: WebGL2RenderingContext, vertexShaderFilename: string, fragmentShaderFilename: string, transformFeedbackVaryings?: Array<string>): Promise<Result<WebGLProgram>> {
 	const [vertexShader, fragmentShader] = await Promise.all([
 		loadShaderFromFile(gl, ShaderType.VERTEX_SHADER, vertexShaderFilename),
 		loadShaderFromFile(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderFilename),
 	]);
 
 	if (vertexShader.ok && fragmentShader.ok)
-		return compileProgram(gl, vertexShader.value, fragmentShader.value); // Memory leak on failure: the shaders are not deleted.
+		return compileProgram(gl, vertexShader.value, fragmentShader.value, !transformFeedbackVaryings ? [] : transformFeedbackVaryings); // Memory leak on failure: the shaders are not deleted.
 
 	gl.deleteShader(vertexShader.ok ? vertexShader.value : null);
 	gl.deleteShader(fragmentShader.ok ? fragmentShader.value : null);
@@ -98,12 +103,12 @@ export async function initShadersFromFile(gl: WebGL2RenderingContext, vertexShad
 	return error(`Failed to load fragment shader '${fragmentShaderFilename}'`, (<Failure>fragmentShader).error);
 }
 
-export function initShadersFromString(gl: WebGL2RenderingContext, vertexShaderSource: string, fragmentShaderSource: string): Result<WebGLProgram> {
+export function initShadersFromString(gl: WebGL2RenderingContext, vertexShaderSource: string, fragmentShaderSource: string, transformFeedbackVaryings?: Array<string>): Result<WebGLProgram> {
 	const vertexShader = compileShader(gl, ShaderType.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = compileShader(gl, ShaderType.FRAGMENT_SHADER, fragmentShaderSource);
 
 	if (vertexShader.ok && fragmentShader.ok)
-		return compileProgram(gl, vertexShader.value, fragmentShader.value); // Memory leak on failure: the shaders are not deleted.
+		return compileProgram(gl, vertexShader.value, fragmentShader.value, !transformFeedbackVaryings ? [] : transformFeedbackVaryings); // Memory leak on failure: the shaders are not deleted.
 
 	gl.deleteShader(vertexShader.ok ? vertexShader.value : null);
 	gl.deleteShader(fragmentShader.ok ? fragmentShader.value : null);
@@ -116,7 +121,7 @@ export function initShadersFromString(gl: WebGL2RenderingContext, vertexShaderSo
 	return error(`Failed to load fragment shader`, (<Failure>fragmentShader).error);
 }
 
-export function initShaders(gl: WebGL2RenderingContext, vertexShaderId: string, fragmentShaderId: string): Result<WebGLProgram> {
+export function initShaders(gl: WebGL2RenderingContext, vertexShaderId: string, fragmentShaderId: string, transformFeedbackVaryings?: Array<string>): Result<WebGLProgram> {
 	const program: WebGLProgram | null = gl.createProgram();
 	if (program === null)
 		return error("WebGL returned null program.");
@@ -132,5 +137,5 @@ export function initShaders(gl: WebGL2RenderingContext, vertexShaderId: string, 
 	}
 	let fragmentShader = fragmentShaderResult.value;
 
-	return compileProgram(gl, vertexShader, fragmentShader); // Memory leak on failure: the shaders are not deleted.
+	return compileProgram(gl, vertexShader, fragmentShader, !transformFeedbackVaryings ? [] : transformFeedbackVaryings); // Memory leak on failure: the shaders are not deleted.
 }

@@ -3,7 +3,7 @@ import {generatePlane} from "../utils/Mesh";
 import {add, identity, Mat4, multiply, rotation, vec3, Vec3} from "../utils/MVU";
 import Mesh from "./Mesh.type";
 import {SubdivisionNumber} from "./SubdivisionNumber";
-import {ErosionShader} from "../shaders/erosion/ErosionShader";
+import {Teppa} from "../shaders/erosion/Teppa";
 
 const PLANE_WIDTH = 50;
 const PLANE_HEIGHT = 50;
@@ -20,7 +20,7 @@ export class Context {
 	heightMap: WebGLTexture | null;
 
 	shader: PrimaryShader;
-	erosionShader: ErosionShader;
+	erosionShader: Teppa;
 
 	/**
 	 * The projection matrix for the camera
@@ -52,7 +52,7 @@ export class Context {
 
 	worldUp: Vec3;
 
-	constructor(terrainRenderShader: PrimaryShader, erosionShader: ErosionShader, canvas: HTMLCanvasElement) {
+	constructor(terrainRenderShader: PrimaryShader, erosionShader: Teppa, canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		this.heightMap = null;
 		this.shader = terrainRenderShader;

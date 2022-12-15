@@ -1,6 +1,8 @@
 import {setupWebGL} from "./utils/WebGLUtils";
 import {Context} from "./model/Context";
-import heightMapPath from "./assets/images/terrain_1024.png";
+// import heightMapPath from "./assets/images/terrain_1024.png";
+// import heightMapPath from "./assets/images/perlin_512.png";
+import heightMapPath from "./assets/images/texture.png";
 import {
 	identity,
 	inverse,
@@ -16,7 +18,7 @@ import {
 import {error, ok, Result} from "./utils/Resulta";
 import {SubdivisionNumber} from "./model/SubdivisionNumber";
 import PrimaryShader from "./shaders/PrimaryShader";
-import {ErosionShader, heightmapFromImageBitmap} from "./shaders/erosion/ErosionShader";
+import {Teppa} from "./shaders/erosion/Teppa";
 
 const SHOULD_LOOP = true;
 
@@ -32,6 +34,9 @@ function reportFatalError(error: Error): void {
 	return;
 }
 
+let heightmapContext;
+let heightmapImage: ImageBitmap;
+
 /**
  *  the main function that is called when the page is loaded
  *  @todo We should probably move all the rendering code to a Renderer class to split the rendering from the hydraulic simulation logic
@@ -39,13 +44,18 @@ function reportFatalError(error: Error): void {
 export async function main(): Promise<void> {
 	try {
 		const heightmapPromise = fetchHeightmap(heightMapPath);
-		const result = setHeightmapImageElementSource();
-		if (!result.ok) return reportFatalError(new Error("Could not set heightmap image source", {cause: result.error}));
+
+		const heightmapCanvas = document.getElementById("heightmap") as HTMLCanvasElement;
+		if (heightmapCanvas === null) return reportFatalError(new Error("Could not find heightmap canvas"));
+		const heightmapContext = heightmapCanvas.getContext("2d");
+		if (heightmapContext === null) return reportFatalError(new Error("Could not get 2d context from heightmap canvas"));
+		heightmapDisplayCanvasTemp = heightmapCanvas;
+		heightmapDisplayContextTemp = heightmapContext;
 
 		const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 		if (!canvas) return reportFatalError(new Error("Could not find canvas element"));
 		const glResult = setupWebGL(canvas, {premultipliedAlpha: false});
-		if (!glResult.ok) return reportFatalError(new Error("WebGL isn't available", {cause: glResult.error}));
+		if (!glResult.ok) return reportFatalError(new Error("Could not get WebGL2 context for main canvas", {cause: glResult.error}));
 		const gl = glResult.value;
 
 		gl.viewport(0, 0, canvas.width, canvas.height);
@@ -54,14 +64,32 @@ export async function main(): Promise<void> {
 		gl.enable(gl.CULL_FACE);
 		gl.cullFace(gl.BACK);
 
+
 		const heightmapImage = await heightmapPromise;
 		if (!heightmapImage.ok) return reportFatalError(new Error("Could not fetch heightmap", {cause: heightmapImage.error}));
-		const primaryShader = new PrimaryShader(gl);
-		primaryShader.setHeightMap(heightmapImage.value);
 
-		const heightmap = heightmapFromImageBitmap(heightmapImage.value);
-		if (!heightmap.ok) return reportFatalError(new Error("Heightmap image is not legal heightmap", {cause: heightmap.error}));
-		const erosionShader = new ErosionShader(heightmap.value);
+		const erosionCanvas = new OffscreenCanvas(heightmapImage.value.width, heightmapImage.value.height);
+		console.log("Erosion canvas size: " + erosionCanvas.width + "x" + erosionCanvas.height);
+		const erosionContext = erosionCanvas.getContext("webgl2") as WebGL2RenderingContext;
+		if (erosionContext === null) return reportFatalError(new Error("Could not get WebGL2 context for erosion canvas"));
+
+
+
+		const primaryShader = new PrimaryShader(gl);
+		const erosionShader = new Teppa(<WebGL2RenderingContext>erosionContext);
+		heightmapImageTemp = heightmapImage.value;
+		heightmapImageCanvasTemp = document.createElement("canvas");
+		heightmapImageCanvasTemp.width = heightmapImage.value.width;
+		heightmapImageCanvasTemp.height = heightmapImage.value.height;
+		const heightmapImageContextTempResult = heightmapImageCanvasTemp.getContext("2d");
+		if (heightmapImageContextTempResult === null) return reportFatalError(new Error("Could not get 2d context from heightmap image canvas"));
+		heightmapImageContextTemp = heightmapImageContextTempResult;
+		heightmapImageContextTemp.drawImage(heightmapImage.value, 0, 0);
+
+		heightmapContext.drawImage(heightmapImage.value, 0, 0, heightmapCanvas.width, heightmapCanvas.height);
+
+		primaryShader.setHeightMap(heightmapImage.value);
+		primaryShader.use()
 
 		const context = new Context(primaryShader, erosionShader, canvas);
 
@@ -75,16 +103,6 @@ export async function main(): Promise<void> {
 		return reportFatalError(error as Error);
 	}
 	return;
-}
-
-// Todo: This should be replaced by a canvas, such that the modified heightmap can be displayed.
-function setHeightmapImageElementSource(): Result<void> {
-	const htmlImageElement = document.getElementById(
-		"heightmap"
-	) as HTMLImageElement;
-	if (htmlImageElement === null) return error("Could not find heightmap image element");
-	htmlImageElement.src = heightMapPath;
-	return ok();
 }
 
 async function fetchHeightmap(url: URL): Promise<Result<ImageBitmap>> {
@@ -187,6 +205,11 @@ function handleHTMLInput(context: Context): Result<void> {
  * @param time
  */
 let lastFrameTime: DOMHighResTimeStamp;
+let heightmapDisplayCanvasTemp: HTMLCanvasElement;
+let heightmapDisplayContextTemp: CanvasRenderingContext2D;
+let heightmapImageTemp: TexImageSource;
+let heightmapImageCanvasTemp: HTMLCanvasElement;
+let heightmapImageContextTemp: CanvasRenderingContext2D;
 function drawScene(
 	gl: WebGL2RenderingContext,
 	context: Context,
@@ -198,7 +221,7 @@ function drawScene(
 	const deltaTime = time - lastFrameTime;
 	lastFrameTime = time;
 
-	context.rotatePlane(0.001 * deltaTime);
+	context.rotatePlane(0.0001 * deltaTime);
 
 	context.shader.bindIndexBuffer();
 	gl.drawElements(
@@ -207,6 +230,11 @@ function drawScene(
 		gl.UNSIGNED_SHORT,
 		0
 	);
+
+	const heightmapChange = context.erosionShader.erode(heightmapImageCanvasTemp);
+	heightmapImageContextTemp.drawImage(heightmapChange, 0, 0, );
+	heightmapDisplayContextTemp.drawImage(heightmapChange, 0, 0, heightmapDisplayCanvasTemp.width, heightmapDisplayCanvasTemp.height);
+	context.shader.setHeightMap(heightmapDisplayCanvasTemp);
 
 	if (loop) requestAnimationFrame((newTime) => drawScene(gl, context, loop, newTime));
 }
