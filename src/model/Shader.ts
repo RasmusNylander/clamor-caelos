@@ -12,10 +12,11 @@ export default class Shader {
 	constructor(
 		gl: WebGL2RenderingContext,
 		vertexShader: string,
-		fragmentShader: string
+		fragmentShader: string,
+		transformFeedbackVaryings?: string[]
 	) {
 		this.gl = gl;
-		const shader = initShadersFromString(gl, vertexShader, fragmentShader);
+		const shader = initShadersFromString(gl, vertexShader, fragmentShader, transformFeedbackVaryings);
 		if (!shader.ok) throw shader.error;
 		this.program = shader.value;
 	}
