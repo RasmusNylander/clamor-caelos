@@ -16,7 +16,7 @@ interface InputOutputPair {
 	transform_feedback: WebGLTransformFeedback;
 }
 
-const number_of_raindrops: number = 1000;
+const number_of_raindrops: number = 10000;
 
 export class Teppa extends Shader {
 	private inputOutputPairs: {current: InputOutputPair, other: InputOutputPair};

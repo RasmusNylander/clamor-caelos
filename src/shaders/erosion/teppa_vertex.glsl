@@ -100,8 +100,8 @@ void main() {
 
 	float height_at_new_position = height_as_float(texture(heightmap, new_position).rgb);
 	float height_difference = height_at_new_position - height;
-	bool flowing_uphill = height_difference > 0.0;
 
+	bool flowing_uphill = height_difference > 0.0;
 	if (flowing_uphill) {
 		float amount_to_deposit = min(current_sediment, height_difference);
 		new_sediment = current_sediment - amount_to_deposit;
